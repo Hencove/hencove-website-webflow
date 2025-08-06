@@ -11,7 +11,7 @@
   }
 
   const env = isDev ? "staging" : "prod";
-  const baseUrl = "https://YOUR-BUCKET-NAME.r2.dev"; // Replace with your R2 URL
+  const baseUrl = "https://pub-aa058d2f7a144fc9b37b2046ac64d64a.r2.dev"; // Replace with your R2 URL
 
   // Load assets using manifest
   loadAssetsWithManifest(env);
@@ -58,7 +58,7 @@
 
       loadAsset(
         "css",
-        `${baseUrl}/${environment}/styles${suffix}.css${version}`,
+        `${baseUrl}/${environment}/styles${suffix}.css${version}`
       );
       loadAsset("js", `${baseUrl}/${environment}/bundle${suffix}.js${version}`);
     }
