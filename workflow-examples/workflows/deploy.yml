@@ -37,10 +37,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: |
-          # Deploy staging assets (including manifest)
-          wrangler r2 object put $R2_BUCKET_NAME/staging/manifest.json --file=dist/staging/manifest.json
-          find dist/staging/assets -type f -exec sh -c 'wrangler r2 object put $R2_BUCKET_NAME/staging/assets/$(basename "$1") --file="$1"' _ {} \;
+          # Deploy staging assets
+          wrangler r2 object put $R2_BUCKET_NAME/staging/manifest.json --file=dist/staging/manifest.json --remote
+          wrangler r2 object put $R2_BUCKET_NAME/staging/assets --file=dist/staging/assets --recursive --remote
 
-          # Deploy production assets (including manifest)
-          wrangler r2 object put $R2_BUCKET_NAME/prod/manifest.json --file=dist/prod/manifest.json
-          find dist/prod/assets -type f -exec sh -c 'wrangler r2 object put $R2_BUCKET_NAME/prod/assets/$(basename "$1") --file="$1"' _ {} \;
+          # Deploy production assets
+          wrangler r2 object put $R2_BUCKET_NAME/prod/manifest.json --file=dist/prod/manifest.json --remote
+          wrangler r2 object put $R2_BUCKET_NAME/prod/assets --file=dist/prod/assets --recursive --remote
