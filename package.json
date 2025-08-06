@@ -1,0 +1,14 @@
+{
+  "name": "hencove-website-webflow",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+	"dev": "vite",
+	"build:staging": "vite build --mode staging",
+	"build:prod": "vite build --mode production",
+	"preview": "vite preview"
+  },
+  "devDependencies": {
+	"vite": "^7.0.0"
+  }
+}
