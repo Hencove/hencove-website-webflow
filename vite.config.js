@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
       minify: prod && "terser",
       sourcemap: !prod,
-      manifest: true, // Generate manifest.json
+      manifest: "manifest.json", // Generate manifest.json
 
       rollupOptions: {
         input: {
