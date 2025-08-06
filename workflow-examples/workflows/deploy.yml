@@ -1,0 +1,46 @@
+name: Build and Deploy Assets
+
+on:
+  push:
+    branches: [main, staging]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "latest"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check code formatting with Prettier
+        run: npx prettier . --check
+
+      - name: Build staging assets
+        run: npm run build:staging
+
+      - name: Build production assets
+        run: npm run build:prod
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy to R2
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        run: |
+          # Deploy staging assets (including manifest)
+          wrangler r2 object put $R2_BUCKET_NAME/staging/manifest.json --file=dist/staging/manifest.json
+          find dist/staging/assets -type f -exec sh -c 'wrangler r2 object put $R2_BUCKET_NAME/staging/assets/$(basename "$1") --file="$1"' _ {} \;
+
+          # Deploy production assets (including manifest)
+          wrangler r2 object put $R2_BUCKET_NAME/prod/manifest.json --file=dist/prod/manifest.json
+          find dist/prod/assets -type f -exec sh -c 'wrangler r2 object put $R2_BUCKET_NAME/prod/assets/$(basename "$1") --file="$1"' _ {} \;
