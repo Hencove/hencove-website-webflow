@@ -58,7 +58,7 @@
 
       loadAsset(
         "css",
-        `${baseUrl}/${environment}/styles${suffix}.css${version}`
+        `${baseUrl}/${environment}/styles${suffix}.css${version}`,
       );
       loadAsset("js", `${baseUrl}/${environment}/bundle${suffix}.js${version}`);
     }
