@@ -79,14 +79,60 @@
   }
 
   function addDevPanel() {
+    const existingPanel = document.getElementById("webflow-dev-panel");
+    if (existingPanel) {
+      existingPanel.remove();
+    }
+
     const panel = document.createElement("div");
+    panel.id = "webflow-dev-panel";
     panel.innerHTML = `
-	  <div style="position:fixed;top:10px;right:10px;z-index:9999;background:#000;color:#fff;padding:8px 12px;border-radius:4px;font-size:11px;font-family:monospace;box-shadow:0 2px 10px rgba(0,0,0,0.3);">
-		<div style="margin-bottom:8px;color:#0f0;">DEV MODE</div>
-		<button onclick="localStorage.removeItem('webflow-dev');location.reload()" style="background:#333;color:#fff;border:none;padding:4px 8px;margin-right:4px;border-radius:2px;cursor:pointer;">Exit</button>
-		<button onclick="location.search='?dev&t='+Date.now()" style="background:#333;color:#fff;border:none;padding:4px 8px;border-radius:2px;cursor:pointer;">Refresh</button>
-	  </div>
-	`;
+      <div style="position:fixed;top:10px;right:10px;z-index:9999;background:#000;color:#fff;padding:8px 12px;border-radius:4px;font-size:11px;font-family:monospace;box-shadow:0 2px 10px rgba(0,0,0,0.3);">
+        <div style="margin-bottom:8px;color:#0f0;">DEV MODE</div>
+        <button id="dev-exit-btn" style="background:#333;color:#fff;border:none;padding:4px 8px;margin-right:4px;border-radius:2px;cursor:pointer;">Exit</button>
+        <button id="dev-refresh-btn" style="background:#333;color:#fff;border:none;padding:4px 8px;border-radius:2px;cursor:pointer;">Refresh</button>
+      </div>
+    `;
+
     document.body.appendChild(panel);
+
+    // Fixed exit button - removes ?dev from URL
+    document
+      .getElementById("dev-exit-btn")
+      .addEventListener("click", function (e) {
+        e.preventDefault();
+        console.log("Exit button clicked");
+
+        try {
+          localStorage.removeItem("webflow-dev");
+          console.log("localStorage cleared");
+
+          // Remove ?dev from URL and reload
+          const url = new URL(window.location);
+          url.searchParams.delete("dev");
+          url.searchParams.delete("t");
+
+          window.location.href = url.toString();
+        } catch (error) {
+          console.error("Error in exit function:", error);
+          const cleanUrl = window.location.href
+            .replace(/[?&]dev[^&]*/, "")
+            .replace(/[?&]t=[^&]*/, "")
+            .replace(/[?&]$/, "");
+          window.location.href = cleanUrl;
+        }
+      });
+
+    // Refresh button with cache busting
+    document
+      .getElementById("dev-refresh-btn")
+      .addEventListener("click", function (e) {
+        e.preventDefault();
+        console.log("Refresh button clicked");
+        const currentUrl = new URL(window.location);
+        currentUrl.searchParams.set("dev", "");
+        currentUrl.searchParams.set("t", Date.now());
+        window.location.href = currentUrl.toString();
+      });
   }
 })();
