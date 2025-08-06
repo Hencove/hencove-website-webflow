@@ -12,6 +12,30 @@ Dynamic asset loading system for Webflow sites using Vite + Cloudflare R2.
    - `R2_BUCKET_NAME`
 4. Rename `workflow-examples` to `.github` to activate workflows
 
+## Cloudflare Setup
+
+1. Make bucket
+2. Enable public access
+3. Configure CORS:
+
+```
+[
+  {
+    "AllowedOrigins": [
+      "https://domain.webflow.io"
+    ],
+    "AllowedMethods": [
+      "GET"
+    ],
+    "AllowedHeaders": [
+      "Content-Type"
+    ],
+    "ExposeHeaders": [],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
 ## Development
 
 - `npm run dev` - Start dev server
