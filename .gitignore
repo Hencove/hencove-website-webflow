@@ -1,0 +1,81 @@
+#---------------------------
+# Build files - will be built
+# as part of deploy
+#---------------------------
+_build/
+dist/
+dist-ssr/
+
+#---------------------------
+# Node artifact files
+#---------------------------
+node_modules/
+
+#---------------------------
+# Vite build artifacts
+#---------------------------
+*.local
+.vite/
+
+#---------------------------
+# Environment files
+#---------------------------
+.env
+.env.*
+!.env.example
+
+#---------------------------
+# npm files
+#---------------------------
+.npmrc
+
+#---------------------------
+# OS-specific files
+#---------------------------
+.DS_Store
+.Trashes
+Thumbs.db
+.nova
+
+#---------------------------
+# Development files
+#---------------------------
+*.log
+*.map
+
+#---------------------------
+# large/disallowed file types
+# a CDN should be used for these
+#---------------------------
+*.hqx
+*.bin
+*.exe
+*.dll
+*.deb
+*.dmg
+*.iso
+*.img
+*.msi
+*.msp
+*.msm
+*.mid
+*.midi
+*.kar
+*.mp3
+*.ogg
+*.m4a
+*.ra
+*.3gpp
+*.3gp
+*.mp4
+*.mpeg
+*.mpg
+*.mov
+*.webm
+*.flv
+*.m4v
+*.mng
+*.asx
+*.asf
+*.wmv
+*.avi
