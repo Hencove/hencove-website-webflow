@@ -124,8 +124,8 @@
       return `<svg xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 ${this.width + this.strokeWidth} ${this.height}"
 					width="${this.width + this.strokeWidth}px" height="${
-        this.height + this.strokeWidth
-      }px">
+            this.height + this.strokeWidth
+          }px">
 				  <g id="flip">
 					${basePath1}
 				  </g>
@@ -233,13 +233,13 @@
       this.endYs.push(flipPath.endY / height, unflipPath.endY / height);
 
       const textContainerParent = block.querySelector(
-        ".hencurve-text-container"
+        ".hencurve-text-container",
       );
       textContainerParent.insertAdjacentElement("afterend", flip);
 
       // Apply stroke color
       const strokePaths = block.querySelectorAll(
-        ".svgContainer svg g path.strokePath"
+        ".svgContainer svg g path.strokePath",
       );
       strokePaths.forEach((path) => {
         path.style.stroke = "var(--base-color-brand--yellow-dark)";
@@ -295,17 +295,17 @@
           .to(
             "#flip .strokePath",
             morphConfig("#unflip .strokePath", originStrokeString),
-            "start"
+            "start",
           )
           .to(
             "#flip .curvePath",
             morphConfig("#unflip .curvePath", originString),
-            "start"
+            "start",
           )
           .to(
             "#flipInverse .curvePath",
             morphConfig("#unflipInverse .curvePath", originInvString),
-            "start"
+            "start",
           );
       });
     },
