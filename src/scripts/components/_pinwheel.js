@@ -66,9 +66,7 @@ gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
     },
 
     _drawEllipsePaths() {
-      let cont3xl = window
-        .getComputedStyle(document.body)
-        .getPropertyValue("--container-3xl");
+      let cont3xl = "54rem";
 
       let smallDiameter = convertRemToPixels(cont3xl) * 1.3;
       let mediumDiameter = convertRemToPixels(cont3xl) * 1.6;
