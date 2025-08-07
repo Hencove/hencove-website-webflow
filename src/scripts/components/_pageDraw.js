@@ -110,7 +110,7 @@ const pageDraw = {
     // Apply stroke color
     $(".svgContainer svg g path.strokePath", block).css(
       "stroke",
-      `var(--color-yellow-600)`,
+      `var(--base-color-brand--yellow-dark)`,
     );
 
     // Initialize timelines for animations
