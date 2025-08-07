@@ -19,6 +19,15 @@ export default defineConfig(({ mode }) => {
         input: {
           main: resolve(__dirname, "src/main.js"),
         },
+
+        external: [
+          "gsap",
+          "gsap/ScrollTrigger",
+          "gsap/DrawSVGPlugin",
+          "gsap/MorphSVGPlugin",
+          "gsap/MotionPathPlugin",
+        ],
+
         output: {
           // Use hashed filenames for better caching
           entryFileNames: prod ? "assets/[name].[hash].js" : "assets/[name].js",

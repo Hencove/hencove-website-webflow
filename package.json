@@ -1,5 +1,5 @@
 {
-  "name": "hencove-webflow-assets",
+  "name": "hencove-webflow-website",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -10,7 +10,12 @@
   },
   "devDependencies": {
     "prettier": "3.6.2",
+    "sass-embedded": "^1.90.0",
     "terser": "^5.43.1",
     "vite": "^7.0.0"
+  },
+  "dependencies": {
+    "@svgdotjs/svg.js": "^3.2.4",
+    "jquery": "^3.7.1"
   }
 }

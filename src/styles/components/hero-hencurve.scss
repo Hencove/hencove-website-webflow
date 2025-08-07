@@ -1,0 +1,130 @@
+.hencurve {
+  .svgContainer {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    clipPath {
+      path {
+        stroke: none !important;
+      }
+    }
+    path#blurStroke {
+      filter: blur(1.5px);
+      stroke: var(--base-color-brand--yellow) !important;
+      stroke-width: 32;
+    }
+    path {
+      fill: none !important;
+    }
+    #unflip {
+      .strokePath {
+        opacity: 0;
+      }
+      > .curvePath {
+        opacity: 0;
+      }
+    }
+    #flipInverse {
+      > .curvePath {
+        opacity: 0;
+      }
+    }
+    #unflipInverse {
+      > .curvePath {
+        opacity: 0;
+      }
+    }
+  }
+  .hencurve-text-container {
+    position: relative;
+    z-index: 2;
+  }
+}
+@media (min-width: 1025px) {
+  .hencurve {
+    position: relative;
+    left: 0;
+    margin-block-start: 0 !important;
+    min-height: 200px;
+    .textContainer {
+      opacity: 0;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
+      h1 {
+        font-size: calc(1.7rem + 8.4vw);
+        font-size: 10rem;
+        margin: 0;
+        position: absolute;
+      }
+      h1#el1 {
+        right: 65%;
+        text-align: right;
+      }
+      h1#el3 {
+        right: 65%;
+        text-align: right;
+      }
+      h1#el2 {
+        text-align: left;
+        left: 50%;
+      }
+      h1#el4 {
+        text-align: left;
+        left: 50%;
+      }
+      &:has(#el1) {
+        clip-path: url(#clipInverse);
+      }
+      &:has(#el4) {
+        clip-path: url(#clipInverse);
+      }
+      &:has(#el2) {
+        clip-path: url(#clipFlip);
+      }
+      &:has(#el3) {
+        clip-path: url(#clipFlip);
+      }
+    }
+  }
+}
+@media (min-width: 1025px) and (min-width: 1200px) {
+  .hencurve {
+    .textContainer {
+      h1 {
+        font-size: 8rem;
+      }
+    }
+  }
+}
+@media (max-width: 1024px) {
+  .hencurve {
+    .svgContainer {
+      top: unset;
+    }
+    .textContainer {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+      gap: 4%;
+      h1 {
+        font-size: calc(1.5rem + 6vw);
+      }
+    }
+  }
+}
+@media (max-width: 1024px) and (min-width: 1200px) {
+  .hencurve {
+    .textContainer {
+      h1 {
+        font-size: 6rem;
+      }
+    }
+  }
+}
