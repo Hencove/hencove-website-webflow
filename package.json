@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@svgdotjs/svg.js": "^3.2.4",
-    "gsap": "npm:@gsap/shockingly@^3.12.7",
+    "gsap": "^3.13.0",
     "jquery": "^3.7.1"
   }
 }
