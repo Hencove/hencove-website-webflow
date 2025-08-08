@@ -37,6 +37,7 @@ gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
       }
 
       $(".do-motionpath-large").removeAttr("style");
+      $(".do-motionpath-medium").removeAttr("style");
       $(".do-motionpath-small").removeAttr("style");
 
       // Kill all ScrollTriggers associated with the section
@@ -60,9 +61,9 @@ gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
         .addTo(this.svgContainer)
         .size("100%", "100%")
         .addClass("absolute top-0 left-0 w-full h-full");
-      const svgElement = $("svg", this.svgContainer);
-      this.svgWidth = svgElement.width();
-      this.svgHeight = svgElement.height();
+      const svgElement = this.svgContainer.querySelector("svg");
+      this.svgWidth = svgElement.getBoundingClientRect().width;
+      this.svgHeight = svgElement.getBoundingClientRect().height;
     },
 
     _drawEllipsePaths() {
