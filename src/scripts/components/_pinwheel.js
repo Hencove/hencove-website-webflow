@@ -31,10 +31,19 @@ const _DEBUG_ = true;
         return;
       }
 
-      if (_DEBUG_)
+      // Enhanced debugging for container
+      if (_DEBUG_) {
+        const containerRect = this.section.getBoundingClientRect();
         console.log(
           "PinWheel: Container found, proceeding with initialization",
         );
+        console.log(
+          `PinWheel: Container dimensions - Width: ${containerRect.width}px, Height: ${containerRect.height}px`,
+        );
+        console.log(
+          `PinWheel: Container position - Left: ${containerRect.left}px, Top: ${containerRect.top}px`,
+        );
+      }
 
       this.destroy();
       this._initializeSVG();
@@ -84,27 +93,63 @@ const _DEBUG_ = true;
         return;
       }
 
+      // Enhanced debugging for SVG container
+      if (_DEBUG_) {
+        const containerRect = this.svgContainer.getBoundingClientRect();
+        const computedStyle = window.getComputedStyle(this.svgContainer);
+        console.log(
+          `PinWheel: SVG container dimensions - Width: ${containerRect.width}px, Height: ${containerRect.height}px`,
+        );
+        console.log(
+          `PinWheel: SVG container position - Left: ${containerRect.left}px, Top: ${containerRect.top}px`,
+        );
+        console.log(
+          `PinWheel: SVG container CSS position: ${computedStyle.position}`,
+        );
+        console.log(
+          `PinWheel: SVG container CSS transform: ${computedStyle.transform}`,
+        );
+      }
+
       this.svgInstance = SVG()
         .addTo(this.svgContainer)
         .size("100%", "100%")
         .addClass("is-motionpath-svg");
 
-      const svgElement = this.svgContainer.querySelector("svg");
-      this.svgWidth = svgElement.getBoundingClientRect().width;
-      this.svgHeight = svgElement.getBoundingClientRect().height;
+      // Wait for next frame to ensure proper rendering
+      requestAnimationFrame(() => {
+        const svgElement = this.svgContainer.querySelector("svg");
+        this.svgWidth = svgElement.getBoundingClientRect().width;
+        this.svgHeight = svgElement.getBoundingClientRect().height;
 
-      if (_DEBUG_) {
-        console.log(
-          `PinWheel: SVG dimensions - Width: ${this.svgWidth}px, Height: ${this.svgHeight}px`,
-        );
-      }
+        if (_DEBUG_) {
+          console.log(
+            `PinWheel: SVG dimensions - Width: ${this.svgWidth}px, Height: ${this.svgHeight}px`,
+          );
+          const svgRect = svgElement.getBoundingClientRect();
+          console.log(
+            `PinWheel: SVG position - Left: ${svgRect.left}px, Top: ${svgRect.top}px`,
+          );
+
+          // Add visual debug indicator at SVG center
+          const debugCenter = this.svgInstance.circle(10).attr({
+            cx: this.svgWidth / 2,
+            cy: this.svgHeight / 2,
+            fill: "red",
+            "fill-opacity": 0.7,
+            id: "debug-center",
+          });
+          console.log(
+            `PinWheel: Debug center circle added at (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
+          );
+        }
+      });
     },
 
     _drawEllipsePaths() {
       if (_DEBUG_) console.log("PinWheel: Drawing ellipse paths...");
 
       let cont3xl = "54rem";
-
       let smallDiameter = convertRemToPixels(cont3xl) * 1.3;
       let mediumDiameter = convertRemToPixels(cont3xl) * 1.6;
       let largeDiameter = convertRemToPixels(cont3xl) * 1.9;
@@ -112,6 +157,9 @@ const _DEBUG_ = true;
       if (_DEBUG_) {
         console.log(
           `PinWheel: Ellipse diameters - Small: ${smallDiameter}px, Medium: ${mediumDiameter}px, Large: ${largeDiameter}px`,
+        );
+        console.log(
+          `PinWheel: SVG center point: (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
         );
       }
 
@@ -123,27 +171,47 @@ const _DEBUG_ = true;
     },
 
     _drawEllipse(id, diameter, strokeColor) {
-      if (_DEBUG_)
+      if (_DEBUG_) {
         console.log(
           `PinWheel: Drawing ellipse ${id} with diameter ${diameter}px`,
         );
+        console.log(
+          `PinWheel: Ellipse center will be at (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
+        );
+      }
 
       let ellipse = this.svgInstance.ellipse(diameter, diameter).attr({
         id,
         cx: this.svgWidth / 2,
         cy: this.svgHeight / 2,
-        stroke: strokeColor,
-        "stroke-width": 2,
+        stroke: _DEBUG_ ? "rgba(255, 0, 0, 0.3)" : strokeColor, // Make visible in debug mode
+        "stroke-width": _DEBUG_ ? 2 : 0,
         fill: "none",
       });
 
-      this._rotateEllipse(id, ellipse);
+      if (_DEBUG_) {
+        const ellipseElement = document.getElementById(id);
+        if (ellipseElement) {
+          const bbox = ellipseElement.getBBox();
+          console.log(
+            `PinWheel: Ellipse ${id} bounding box - x: ${bbox.x}, y: ${bbox.y}, width: ${bbox.width}, height: ${bbox.height}`,
+          );
+        }
+      }
 
-      // Convert the ellipse to a motion path
+      this._rotateEllipse(id, ellipse);
       MotionPathPlugin.convertToPath(`#${id}`);
 
-      if (_DEBUG_)
+      if (_DEBUG_) {
         console.log(`PinWheel: Ellipse ${id} converted to motion path`);
+        // Log the actual path data
+        const pathElement = document.getElementById(id);
+        if (pathElement && pathElement.tagName === "path") {
+          console.log(
+            `PinWheel: Path ${id} d attribute: ${pathElement.getAttribute("d")}`,
+          );
+        }
+      }
     },
 
     _rotateEllipse(id, ellipse) {
@@ -163,8 +231,11 @@ const _DEBUG_ = true;
         cy: this.svgHeight / 2,
       });
 
-      if (_DEBUG_)
-        console.log(`PinWheel: Rotated ${id} by ${rotation} degrees`);
+      if (_DEBUG_) {
+        console.log(
+          `PinWheel: Rotated ${id} by ${rotation} degrees around center (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
+        );
+      }
     },
 
     _initializeMotionPaths() {
@@ -184,6 +255,18 @@ const _DEBUG_ = true;
         console.log(
           `PinWheel: Initializing motion path for ${selector} with ${items.length} items on path ${pathId}`,
         );
+
+        // Log initial positions of items
+        items.each(function (index) {
+          const rect = this.getBoundingClientRect();
+          const computedStyle = window.getComputedStyle(this);
+          console.log(
+            `PinWheel: Item ${index + 1} initial position - Left: ${rect.left}px, Top: ${rect.top}px`,
+          );
+          console.log(
+            `PinWheel: Item ${index + 1} CSS transform: ${computedStyle.transform}`,
+          );
+        });
       }
 
       items.each(function (index) {
@@ -218,7 +301,25 @@ const _DEBUG_ = true;
                   );
                 }
               : undefined,
+            onUpdate: _DEBUG_
+              ? (self) => {
+                  if (index === 0) {
+                    // Only log for first item to avoid spam
+                    console.log(
+                      `PinWheel: ScrollTrigger progress: ${self.progress.toFixed(3)}`,
+                    );
+                  }
+                }
+              : undefined,
           },
+          onComplete: _DEBUG_
+            ? () => {
+                const rect = this.getBoundingClientRect();
+                console.log(
+                  `PinWheel: Item ${index + 1} final position - Left: ${rect.left}px, Top: ${rect.top}px`,
+                );
+              }
+            : undefined,
         });
       });
     },
@@ -229,14 +330,14 @@ const _DEBUG_ = true;
     if (_DEBUG_) console.log("PinWheel: Window resized, reinitializing...");
     PinWheel.destroy();
     PinWheel.init();
-  }, 200);
+  }, 250);
 
-  document.addEventListener("DOMContentLoaded", () => {
-    if (_DEBUG_) console.log("PinWheel: DOM content loaded");
+  window.addEventListener("resize", handleResize);
+
+  // Initialize when DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => PinWheel.init());
+  } else {
     PinWheel.init();
-    window.addEventListener("resize", handleResize);
-  });
-
-  // Fire an initial resize once page has fully loaded
-  window.addEventListener("load", handleResize);
-})(document, window, $);
+  }
+})(document, window, jQuery);
