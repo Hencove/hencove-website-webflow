@@ -115,7 +115,7 @@ const _DEBUG_ = true;
         .addClass("is-motionpath-svg");
 
       // Wait for next frame to ensure proper rendering
-      requestAnimationFrame(() => {
+      requestAnimationFrame(async () => {
         const svgElement = this.svgContainer.querySelector("svg");
         this.svgWidth = svgElement.getBoundingClientRect().width;
         this.svgHeight = svgElement.getBoundingClientRect().height;
@@ -142,12 +142,15 @@ const _DEBUG_ = true;
           );
         }
 
-        this._drawEllipsePaths();
+        // Wait for path drawing and conversion to complete
+        await this._drawEllipsePaths();
+
+        // Now initialize motion paths with fully converted paths
         this._initializeMotionPaths();
       });
     },
 
-    _drawEllipsePaths() {
+    async _drawEllipsePaths() {
       if (_DEBUG_) console.log("PinWheel: Drawing ellipse paths...");
 
       let cont3xl = "54rem";
@@ -159,16 +162,18 @@ const _DEBUG_ = true;
         console.log(
           `PinWheel: Ellipse diameters - Small: ${smallDiameter}px, Medium: ${mediumDiameter}px, Large: ${largeDiameter}px`,
         );
-        console.log(
-          `PinWheel: SVG center point: (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
-        );
       }
 
+      // Draw all ellipses first
       this._drawEllipse("circlePathSmall", smallDiameter, "transparent");
       this._drawEllipse("circlePathMedium", mediumDiameter, "transparent");
       this._drawEllipse("circlePathLarge", largeDiameter, "transparent");
 
-      if (_DEBUG_) console.log("PinWheel: All ellipse paths drawn");
+      // Wait for next frame to ensure all convertToPath operations complete
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      if (_DEBUG_)
+        console.log("PinWheel: All ellipse paths drawn and converted");
     },
 
     _drawEllipse(id, diameter, strokeColor) {
