@@ -8,6 +8,9 @@ import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
+// Global debug flag - set to false for production
+const _DEBUG_ = false;
+
 (function (document, window, $) {
   const PinWheel = {
     section: null,
@@ -17,20 +20,38 @@ gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
     svgWidth: 0,
 
     init() {
+      if (_DEBUG_) console.log("PinWheel: Initializing...");
+
       this.section = document.querySelector(
         ".is-pinwheel-motionpath-container",
       );
-      if (!this.section) return;
+
+      if (!this.section) {
+        if (_DEBUG_) console.warn("PinWheel: Container element not found");
+        return;
+      }
+
+      if (_DEBUG_) {
+        const containerRect = this.section.getBoundingClientRect();
+        console.log(
+          "PinWheel: Container found, proceeding with initialization",
+        );
+        console.log(
+          `PinWheel: Container dimensions - Width: ${containerRect.width}px, Height: ${containerRect.height}px`,
+        );
+      }
 
       this.destroy();
       this._initializeSVG();
-      this._drawEllipsePaths();
-      this._initializeMotionPaths();
+
+      if (_DEBUG_) console.log("PinWheel: Initialization complete");
     },
 
     destroy() {
-      // console.log("destroy is running");
+      if (_DEBUG_) console.log("PinWheel: Destroying existing instances...");
+
       if (this.svgInstance) {
+        if (_DEBUG_) console.log("PinWheel: Clearing SVG instance");
         this.svgInstance.clear();
         this.svgInstance.remove();
         this.svgInstance = null;
@@ -41,134 +62,214 @@ gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
       $(".do-motionpath-small").removeAttr("style");
 
       // Kill all ScrollTriggers associated with the section
-      //console.log(ScrollTrigger.getAll());
-      let pageScrollTriggers = ScrollTrigger.getAll();
-      pageScrollTriggers.forEach((pageScrollTrigger) => {
-        if (pageScrollTrigger.vars.id == "pinwheelTrigger") {
-          pageScrollTrigger.kill();
+      let killedCount = 0;
+      ScrollTrigger.getAll().forEach((trigger) => {
+        if (trigger.vars.id === "pinwheelTrigger") {
+          trigger.kill();
+          killedCount++;
         }
       });
 
-      //ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      if (_DEBUG_)
+        console.log(`PinWheel: Destroyed ${killedCount} ScrollTriggers`);
     },
 
     _initializeSVG() {
+      if (_DEBUG_) console.log("PinWheel: Initializing SVG...");
+
       this.svgContainer = this.section.querySelector(
         ".is-pinwheel-motionpath-svg-container",
       );
 
+      if (!this.svgContainer) {
+        if (_DEBUG_) console.error("PinWheel: SVG container not found");
+        return;
+      }
+
+      if (_DEBUG_) {
+        const containerRect = this.svgContainer.getBoundingClientRect();
+        console.log(
+          `PinWheel: SVG container dimensions - Width: ${containerRect.width}px, Height: ${containerRect.height}px`,
+        );
+      }
+
       this.svgInstance = SVG()
         .addTo(this.svgContainer)
         .size("100%", "100%")
-        .addClass("absolute top-0 left-0 w-full h-full");
-      const svgElement = this.svgContainer.querySelector("svg");
-      this.svgWidth = svgElement.getBoundingClientRect().width;
-      this.svgHeight = svgElement.getBoundingClientRect().height;
+        .addClass("is-motionpath-svg");
+
+      // Wait for SVG to be properly rendered
+      requestAnimationFrame(() => {
+        const svgElement = this.svgContainer.querySelector("svg");
+        this.svgWidth = svgElement.getBoundingClientRect().width;
+        this.svgHeight = svgElement.getBoundingClientRect().height;
+
+        if (_DEBUG_) {
+          console.log(
+            `PinWheel: SVG dimensions - Width: ${this.svgWidth}px, Height: ${this.svgHeight}px`,
+          );
+
+          // Add visual debug indicator at SVG center
+          this.svgInstance.circle(10).attr({
+            cx: this.svgWidth / 2,
+            cy: this.svgHeight / 2,
+            fill: "red",
+            "fill-opacity": 0.7,
+            id: "debug-center",
+          });
+          console.log(
+            `PinWheel: Debug center circle added at (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
+          );
+        }
+
+        this._drawEllipsePaths();
+        this._initializeMotionPaths();
+      });
     },
 
     _drawEllipsePaths() {
-      let cont3xl = "54rem";
+      if (_DEBUG_) console.log("PinWheel: Drawing ellipse paths...");
 
-      let smallDiameter = convertRemToPixels(cont3xl) * 1.3;
-      let mediumDiameter = convertRemToPixels(cont3xl) * 1.6;
-      let largeDiameter = convertRemToPixels(cont3xl) * 1.9;
+      const cont3xl = "54rem";
+      const smallDiameter = convertRemToPixels(cont3xl) * 1.3;
+      const mediumDiameter = convertRemToPixels(cont3xl) * 1.6;
+      const largeDiameter = convertRemToPixels(cont3xl) * 1.9;
 
-      // if ($(window).width() <= 1024) {
-      //     smallDiameter = this.svgHeight * 1.3;
-      //     mediumDiameter = this.svgHeight * 1.3;
-      //     largeDiameter = this.svgHeight * 1.3;
-      // }
+      if (_DEBUG_) {
+        console.log(
+          `PinWheel: Ellipse diameters - Small: ${smallDiameter}px, Medium: ${mediumDiameter}px, Large: ${largeDiameter}px`,
+        );
+        console.log(
+          `PinWheel: SVG center point: (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
+        );
+      }
 
-      this._drawEllipse("circlePathSmall", smallDiameter, "transparent");
-      this._drawEllipse("circlePathMedium", mediumDiameter, "transparent");
-      this._drawEllipse("circlePathLarge", largeDiameter, "transparent");
+      this._drawEllipse("circlePathSmall", smallDiameter);
+      this._drawEllipse("circlePathMedium", mediumDiameter);
+      this._drawEllipse("circlePathLarge", largeDiameter);
+
+      if (_DEBUG_) console.log("PinWheel: All ellipse paths drawn");
     },
 
-    _drawEllipse(id, diameter, strokeColor) {
-      let ellipse = this.svgInstance.ellipse(diameter, diameter).attr({
+    _drawEllipse(id, diameter) {
+      if (_DEBUG_) {
+        console.log(
+          `PinWheel: Drawing ellipse ${id} with diameter ${diameter}px`,
+        );
+        console.log(
+          `PinWheel: Ellipse center will be at (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
+        );
+      }
+
+      const ellipse = this.svgInstance.ellipse(diameter, diameter).attr({
         id,
         cx: this.svgWidth / 2,
         cy: this.svgHeight / 2,
-        stroke: strokeColor,
-        "stroke-width": 2,
+        stroke: _DEBUG_ ? "rgba(255, 0, 0, 0.3)" : "transparent",
+        "stroke-width": _DEBUG_ ? 2 : 0,
         fill: "none",
       });
 
-      // ?
-      // ? 	maybe rotate each circle so items start at different points on it
-      // ?
       this._rotateEllipse(id, ellipse);
-
-      // Convert the ellipse to a motion path
       MotionPathPlugin.convertToPath(`#${id}`);
+
+      if (_DEBUG_) {
+        console.log(`PinWheel: Ellipse ${id} converted to motion path`);
+        // Log the actual path data
+        setTimeout(() => {
+          const pathElement = document.getElementById(id);
+          if (pathElement && pathElement.tagName === "path") {
+            console.log(
+              `PinWheel: Path ${id} d attribute: ${pathElement.getAttribute("d")}`,
+            );
+          }
+        }, 0);
+      }
     },
 
-    // ?
-    // ? 	maybe rotate each circle so items start at different points on it
-    // ?
     _rotateEllipse(id, ellipse) {
-      if (id == "circlePathSmall") {
-        // Apply a rotation to offset the start position
-        ellipse.transform({
-          rotate: 0, // Rotation angle in degrees
-          cx: this.svgWidth / 2, // Rotation center X
-          cy: this.svgHeight / 2, // Rotation center Y
-        });
+      let rotation = 0;
+
+      if (id === "circlePathMedium") {
+        rotation = 90;
+      } else if (id === "circlePathLarge") {
+        rotation = 45;
       }
 
-      if (id == "circlePathMedium") {
-        // Apply a rotation to offset the start position
-        ellipse.transform({
-          rotate: 90, // Rotation angle in degrees
-          cx: this.svgWidth / 2, // Rotation center X
-          cy: this.svgHeight / 2, // Rotation center Y
-        });
-      }
+      ellipse.transform({
+        rotate: rotation,
+        cx: this.svgWidth / 2,
+        cy: this.svgHeight / 2,
+      });
 
-      if (id == "circlePathLarge") {
-        // Apply a rotation to offset the start position
-        ellipse.transform({
-          rotate: 45, // Rotation angle in degrees
-          cx: this.svgWidth / 2, // Rotation center X
-          cy: this.svgHeight / 2, // Rotation center Y
-        });
+      if (_DEBUG_) {
+        console.log(
+          `PinWheel: Rotated ${id} by ${rotation} degrees around center (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
+        );
       }
     },
 
     _initializeMotionPaths() {
+      if (_DEBUG_) console.log("PinWheel: Initializing motion paths...");
+
       this._initializeMotionPath(".do-motionpath-small", "#circlePathSmall");
       this._initializeMotionPath(".do-motionpath-medium", "#circlePathMedium");
       this._initializeMotionPath(".do-motionpath-large", "#circlePathLarge");
+
+      if (_DEBUG_) console.log("PinWheel: All motion paths initialized");
     },
 
     _initializeMotionPath(selector, pathId) {
       const items = $(`.is-hidden-pinwheel-items-container ${selector}`);
 
+      if (_DEBUG_) {
+        console.log(
+          `PinWheel: Initializing motion path for ${selector} with ${items.length} items on path ${pathId}`,
+        );
+      }
+
       items.each(function (index) {
         const totalItems = items.length;
         const itemOffset = index / totalItems;
-        // let shiftBy = 80;
 
-        // if (index % 2 == 0) {
-        // 	shiftBy = 0;
-        // }
+        if (_DEBUG_) {
+          console.log(
+            `PinWheel: Setting up item ${index + 1}/${totalItems} with offset ${itemOffset.toFixed(3)}`,
+          );
+        }
 
         gsap.to(this, {
           motionPath: {
             path: pathId,
             align: pathId,
             alignOrigin: [0.5, 0.5],
-            start: itemOffset, // Staggered start
-            end: itemOffset + 0.25, // Reduced range for slower progress
+            start: itemOffset,
+            end: itemOffset + 0.25,
             autoRotate: false,
           },
           scrollTrigger: {
             id: "pinwheelTrigger",
             trigger: ".is-pinwheel-motionpath-container",
-            scrub: 5, // Smooth, scroll-based animation
-            start: "top 80%", // Start earlier
-            end: "bottom top", // End later
-            // markers: true, // Uncomment for debugging
+            scrub: 5,
+            start: "top 80%",
+            end: "bottom top",
+            onToggle: _DEBUG_
+              ? (self) => {
+                  console.log(
+                    `PinWheel: ScrollTrigger toggled - isActive: ${self.isActive}, progress: ${self.progress.toFixed(3)}`,
+                  );
+                }
+              : undefined,
+            onUpdate: _DEBUG_
+              ? (self) => {
+                  if (index === 0) {
+                    // Only log for first item to avoid spam
+                    console.log(
+                      `PinWheel: ScrollTrigger progress: ${self.progress.toFixed(3)}`,
+                    );
+                  }
+                }
+              : undefined,
           },
         });
       });
@@ -177,15 +278,17 @@ gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
   // Handle window resize with debounce
   const handleResize = debounce(() => {
+    if (_DEBUG_) console.log("PinWheel: Window resized, reinitializing...");
     PinWheel.destroy();
     PinWheel.init();
-  }, 200);
+  }, 250);
 
-  document.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("resize", handleResize);
+
+  // Initialize when DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => PinWheel.init());
+  } else {
     PinWheel.init();
-    window.addEventListener("resize", handleResize);
-  });
-
-  // Fire an initial resize once page has fully loaded
-  window.addEventListener("load", handleResize);
-})(document, window, $);
+  }
+})(document, window, jQuery);

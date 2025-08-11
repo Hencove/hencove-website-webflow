@@ -255,7 +255,7 @@ const pageDraw = {
 (function (document, window, $) {
   const debouncedResizeHandler = debounce(() => {
     pageDraw.init(); // Always destroy and recreate on resize
-  }, 32);
+  }, 200);
 
   // Initialize on load
   pageDraw.init();
