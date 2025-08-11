@@ -244,31 +244,49 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       const reversePathDraw = false;
       gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin);
 
+      // FIX: Kill any existing ScrollTriggers for this container
+      ScrollTrigger.getAll().forEach((trigger) => {
+        if (trigger.trigger === container) {
+          log("🔫 Killing existing ScrollTrigger for container");
+          trigger.kill();
+        }
+      });
+
+      // FIX: Get the specific path in this container, not all paths
+      const pathElement = container.querySelector(".hencurve-anchors-svg path");
+
+      if (!pathElement) {
+        log("❌ No path element found in container");
+        return;
+      }
+
+      log("🎯 Animating specific path element:", pathElement);
+
       if (
         $("body").hasClass("error404") ||
         $(container).hasClass("is-about-us-hero")
       ) {
         log("🎬 Using immediate animation");
         gsap.fromTo(
-          ".hencurve-anchors-svg path",
-          { drawSVG: "0%" }, // Start fully hidden
+          pathElement, // Use specific path, not selector
+          { drawSVG: "0%" },
           {
-            drawSVG: "100%", // Draw to 100%
+            drawSVG: "100%",
           },
         );
       } else {
         log("🎬 Using scroll trigger animation");
         gsap.fromTo(
-          ".hencurve-anchors-svg path",
-          { drawSVG: reversePathDraw ? "100% 100%" : "0% 0%" }, // Start fully hidden
+          pathElement, // Use specific path, not selector
+          { drawSVG: reversePathDraw ? "100% 100%" : "0% 0%" },
           {
-            drawSVG: "0% 100%", // Draw to 100%
+            drawSVG: "0% 100%",
             scrollTrigger: {
               trigger: container,
               start: `top center`,
               end: `+=300`,
-              scrub: 1, // Smooth scrub animation
-              // markers: true, // Add markers for debugging (remove in production)
+              scrub: 1,
+              // markers: true,
             },
           },
         );
@@ -294,6 +312,16 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
     _destroy: function () {
       log("💥 _destroy called");
+
+      // FIX: Kill all ScrollTriggers for these containers first
+      this.containers?.forEach((container) => {
+        ScrollTrigger.getAll().forEach((trigger) => {
+          if (trigger.trigger === container) {
+            log("🔫 Killing ScrollTrigger for container during destroy");
+            trigger.kill();
+          }
+        });
+      });
 
       const svgs = $(".hencurve-anchors-container svg");
       log("🗑️ Found SVGs to remove:", svgs.length);
