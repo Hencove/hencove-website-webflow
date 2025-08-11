@@ -21,6 +21,7 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
   let HencurveAnchors = {
     containers: undefined,
     isMobile: false, // Track media query state
+    isResizing: false, // FIX: Add resize protection flag
 
     _init: function () {
       log("🚀 _init called, isMobile:", this.isMobile);
@@ -238,21 +239,13 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       this.onCompleteEvent(container);
     },
 
+    // FIX: Updated animateSVG with conflict resolution
     animateSVG(container) {
       log("🎭 animateSVG called for container:", container);
 
       const reversePathDraw = false;
-      gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin);
 
-      // FIX: Kill any existing ScrollTriggers for this container
-      ScrollTrigger.getAll().forEach((trigger) => {
-        if (trigger.trigger === container) {
-          log("🔫 Killing existing ScrollTrigger for container");
-          trigger.kill();
-        }
-      });
-
-      // FIX: Get the specific path in this container, not all paths
+      // FIX: Get the specific path in this container
       const pathElement = container.querySelector(".hencurve-anchors-svg path");
 
       if (!pathElement) {
@@ -260,7 +253,9 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
         return;
       }
 
-      log("🎯 Animating specific path element:", pathElement);
+      // FIX: Use unique ID for your ScrollTriggers to avoid conflicts
+      const uniqueId = `hencurve-${container.id || Date.now()}`;
+      log("🏷️ Using unique ScrollTrigger ID:", uniqueId);
 
       if (
         $("body").hasClass("error404") ||
@@ -268,25 +263,27 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       ) {
         log("🎬 Using immediate animation");
         gsap.fromTo(
-          pathElement, // Use specific path, not selector
+          pathElement,
           { drawSVG: "0%" },
           {
             drawSVG: "100%",
+            duration: 1.5,
+            ease: "power2.out",
           },
         );
       } else {
         log("🎬 Using scroll trigger animation");
         gsap.fromTo(
-          pathElement, // Use specific path, not selector
+          pathElement,
           { drawSVG: reversePathDraw ? "100% 100%" : "0% 0%" },
           {
             drawSVG: "0% 100%",
             scrollTrigger: {
+              id: uniqueId, // FIX: Unique ID prevents conflicts with other scripts
               trigger: container,
               start: `top center`,
               end: `+=300`,
               scrub: 1,
-              // markers: true,
             },
           },
         );
@@ -310,18 +307,21 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       document.dispatchEvent(event);
     },
 
+    // FIX: Updated destroy with targeted cleanup
     _destroy: function () {
       log("💥 _destroy called");
 
-      // FIX: Kill all ScrollTriggers for these containers first
-      this.containers?.forEach((container) => {
-        ScrollTrigger.getAll().forEach((trigger) => {
-          if (trigger.trigger === container) {
-            log("🔫 Killing ScrollTrigger for container during destroy");
-            trigger.kill();
-          }
-        });
+      // FIX: Only kill YOUR ScrollTriggers, not all of them
+      ScrollTrigger.getAll().forEach((trigger) => {
+        if (trigger.vars.id && trigger.vars.id.startsWith("hencurve-")) {
+          log("🔫 Killing hencurve ScrollTrigger:", trigger.vars.id);
+          trigger.kill();
+        }
       });
+
+      // Kill only your path animations
+      gsap.killTweensOf(".hencurve-anchors-svg path");
+      log("🔫 Killed hencurve path animations");
 
       const svgs = $(".hencurve-anchors-container svg");
       log("🗑️ Found SVGs to remove:", svgs.length);
@@ -329,35 +329,33 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       // Clear SVGs inside all containers
       svgs.remove();
 
-      log("✅ SVGs removed");
+      log("✅ Destroy complete");
     },
   };
 
-  // FIX: Improved resize handler with debugging
+  // FIX: Coordinated resize handler to prevent conflicts
   const handleResize = debounce(() => {
     log("🔄 handleResize triggered, isMobile:", HencurveAnchors.isMobile);
     log("📱 Window size:", window.innerWidth, "x", window.innerHeight);
 
-    if (!HencurveAnchors.isMobile) {
-      log("🖥️ Desktop resize - destroying and reinitializing");
-      HencurveAnchors._destroy(); // Clear the SVG instance
+    if (!HencurveAnchors.isMobile && !HencurveAnchors.isResizing) {
+      HencurveAnchors.isResizing = true;
 
-      requestAnimationFrame(() => {
+      // FIX: Small delay to let other scripts finish their resize operations
+      setTimeout(() => {
+        log("🖥️ Desktop resize - destroying and reinitializing");
+        HencurveAnchors._destroy();
+
         requestAnimationFrame(() => {
           log("🔄 Reinitializing after resize...");
-          HencurveAnchors._init(); // Reinitialize with fresh positions
+          HencurveAnchors._init();
+          HencurveAnchors.isResizing = false;
         });
-      });
+      }, 100); // Delay to avoid conflicts with other resize handlers
     } else {
       log("📱 Mobile resize - skipping");
     }
-  }, 200);
-
-  // Add this to test if debounce is the issue
-  const handleResizeImmediate = () => {
-    log("⚡ handleResizeImmediate triggered (no debounce)");
-    handleResize();
-  };
+  }, 350); // FIX: Slightly longer debounce than pinwheel script (250ms)
 
   // Initialize GSAP MatchMedia
   const mm = gsap.matchMedia();
