@@ -380,19 +380,42 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
   document.addEventListener("DOMContentLoaded", () => {
     log("📄 DOMContentLoaded - adding resize listener");
 
-    // Test if resize listener is working
+    // FIX: Test multiple ways to add resize listener
     const testResize = () => {
       log("🧪 TEST: Resize event fired!");
       handleResize();
     };
 
-    window.addEventListener("resize", testResize); // Add resize listener
+    // Try different approaches
+    window.addEventListener("resize", testResize);
+    log("✅ Resize listener added via addEventListener");
 
-    // Also add a manual test
+    // Also try jQuery approach as backup
+    $(window).on("resize", () => {
+      log("🧪 jQuery resize fired!");
+      handleResize();
+    });
+    log("✅ jQuery resize listener added");
+
+    // Test if window object is available
+    log("🔍 Window object check:", {
+      hasWindow: typeof window !== "undefined",
+      hasAddEventListener: typeof window.addEventListener === "function",
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
+    });
+
+    // Manual test function
     window.testResize = () => {
       log("🔧 Manual resize test triggered");
       handleResize();
     };
+
+    // Test the manual function immediately
+    log("🧪 Testing manual resize function...");
+    setTimeout(() => {
+      window.testResize();
+    }, 1000);
   });
 
   // Fire an initial resize once page has fully loaded
@@ -400,4 +423,43 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     log("🌐 Window load event - firing initial resize");
     handleResize();
   });
+
+  // FIX: Simplified resize handler for testing
+  const handleResizeSimple = () => {
+    log("🔄 handleResizeSimple triggered - NO DEBOUNCE");
+    log("📱 Window size:", window.innerWidth, "x", window.innerHeight);
+
+    if (!HencurveAnchors.isMobile) {
+      log("🖥️ Would destroy and reinit here");
+      // Don't actually destroy yet, just log
+    }
+  };
+
+  const handleResize = debounce(() => {
+    log(
+      "🔄 handleResize triggered (DEBOUNCED), isMobile:",
+      HencurveAnchors.isMobile,
+    );
+    log("📱 Window size:", window.innerWidth, "x", window.innerHeight);
+
+    if (!HencurveAnchors.isMobile && !HencurveAnchors.isResizing) {
+      HencurveAnchors.isResizing = true;
+
+      setTimeout(() => {
+        log("🖥️ Desktop resize - destroying and reinitializing");
+        HencurveAnchors._destroy();
+
+        requestAnimationFrame(() => {
+          log("🔄 Reinitializing after resize...");
+          HencurveAnchors._init();
+          HencurveAnchors.isResizing = false;
+        });
+      }, 100);
+    } else {
+      log("📱 Mobile resize - skipping");
+    }
+  }, 350);
+
+  window.addEventListener("resize", testResize);
+  window.addEventListener("resize", handleResizeSimple); // Test without debounce
 })(document, window, $);
