@@ -49,13 +49,16 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
         return;
       }
 
-      // FIX: Force layout recalculation for accurate positioning
+      // FIX: Force layout recalculation AND clear any cached positions
       container.offsetHeight;
 
-      // Get positions of anchors relative to the container
+      // FIX: Force a reflow to ensure fresh measurements
+      window.getComputedStyle(container).height;
+
+      // Get fresh positions every time - don't cache these
+      const containerRect = container.getBoundingClientRect();
       const firstAnchor = anchors[0].getBoundingClientRect();
       const secondAnchor = anchors[1].getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
 
       const firstAnchorPos = {
         x: firstAnchor.left - containerRect.left,
@@ -209,12 +212,16 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     },
   };
 
-  // FIX: Improved resize handler with proper timing
+  // FIX: Improved resize handler with better timing
   const handleResize = debounce(() => {
     if (!HencurveAnchors.isMobile) {
       HencurveAnchors._destroy(); // Clear the SVG instance
+
+      // Wait for layout to settle after destroy
       requestAnimationFrame(() => {
-        HencurveAnchors._init(); // Reinitialize on desktop resize
+        requestAnimationFrame(() => {
+          HencurveAnchors._init(); // Reinitialize with fresh positions
+        });
       });
     }
   }, 200);
