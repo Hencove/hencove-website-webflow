@@ -1,11 +1,12 @@
-name: Build and Deploy Assets
+name: Build and Deploy Prod Assets
 
 on:
   push:
-    branches: [main, staging]
+    branches:
+      - main
 
 jobs:
-  build-and-deploy:
+  build-and-deploy-prod:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,9 +23,6 @@ jobs:
       - name: Check code formatting with Prettier
         run: npx prettier . --check
 
-      - name: Build staging assets
-        run: npm run build:staging
-
       - name: Build production assets
         run: npm run build:prod
 
@@ -38,10 +36,6 @@ jobs:
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
 
         run: |
-          # Deploy staging assets (with --remote flag)
-          wrangler r2 object put $R2_BUCKET_NAME/staging/manifest.json --file=dist/staging/manifest.json --remote
-          find dist/staging/assets -type f -exec sh -c 'wrangler r2 object put $R2_BUCKET_NAME/staging/assets/$(basename "$1") --file="$1" --remote' _ {} \;
-
           # Deploy production assets (with --remote flag)
           wrangler r2 object put $R2_BUCKET_NAME/prod/manifest.json --file=dist/prod/manifest.json --remote
           find dist/prod/assets -type f -exec sh -c 'wrangler r2 object put $R2_BUCKET_NAME/prod/assets/$(basename "$1") --file="$1" --remote' _ {} \;
