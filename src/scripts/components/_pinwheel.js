@@ -47,8 +47,6 @@ const _DEBUG_ = true;
 
       this.destroy();
       this._initializeSVG();
-      this._drawEllipsePaths();
-      this._initializeMotionPaths();
 
       if (_DEBUG_) console.log("PinWheel: Initialization complete");
     },
@@ -143,6 +141,9 @@ const _DEBUG_ = true;
             `PinWheel: Debug center circle added at (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
           );
         }
+
+        this._drawEllipsePaths();
+        this._initializeMotionPaths();
       });
     },
 
