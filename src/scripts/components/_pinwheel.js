@@ -60,7 +60,7 @@ gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
       this.svgInstance = SVG()
         .addTo(this.svgContainer)
         .size("100%", "100%")
-        .addClass("absolute top-0 left-0 w-full h-full");
+        .addClass("is-motionpath-svg");
       const svgElement = this.svgContainer.querySelector("svg");
       this.svgWidth = svgElement.getBoundingClientRect().width;
       this.svgHeight = svgElement.getBoundingClientRect().height;
