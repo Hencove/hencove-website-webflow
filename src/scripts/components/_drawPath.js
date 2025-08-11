@@ -55,12 +55,16 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     _drawSVG: function (container) {
       log("🎨 _drawSVG called for container:", container);
 
+      // FIX: Add random class to see if SVG is being recreated
+      const randomClass = `svg-${Math.floor(Math.random() * 1000)}`;
+
       let svgInstance = SVG()
         .addTo(container)
         .size("100%", "100%")
-        .addClass("hencurve-anchors-svg");
+        .addClass("hencurve-anchors-svg")
+        .addClass(randomClass); // Add random class for debugging
 
-      log("✅ SVG instance created:", svgInstance);
+      log("✅ SVG instance created with class:", randomClass, svgInstance);
       this._findAnchors(container, svgInstance);
     },
 
@@ -185,7 +189,6 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
           : endY - strokeWidth;
 
       const totalSpace = secondAnchorStartX - firstAnchorEndX;
-
       const arcSpace = totalSpace / 2;
 
       log("🔧 Path calculations:", {
@@ -205,11 +208,17 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       }
 
       const arcRadius = Math.abs(firstAnchorEndY - secondAnchorStartY) / 2;
-
-      let pathData = `M ${startX}, ${startY} \n`;
-
       const arc1StartX = firstAnchorEndX + arcSpace - arcRadius;
 
+      // FIX: Add detailed logging for each path component
+      log("🧮 Detailed path calculations:", {
+        arcRadius,
+        arc1StartX,
+        "firstAnchorEndX + arcSpace": firstAnchorEndX + arcSpace,
+        "arcSpace - arcRadius": arcSpace - arcRadius,
+      });
+
+      let pathData = `M ${startX}, ${startY} \n`;
       pathData += `H ${arc1StartX} \n`;
 
       const arc1Direction = firstAnchorEndY < secondAnchorStartY ? 1 : 0;
@@ -224,7 +233,17 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
       pathData += `H ${endX} \n`;
 
-      log("📝 Final path data:", pathData);
+      // FIX: Add timestamp to see if this is being called on resize
+      const timestamp = new Date().toLocaleTimeString();
+      log(`📝 [${timestamp}] Final path data:`, pathData);
+      log(`📝 [${timestamp}] Key values:`, {
+        startX,
+        arc1StartX,
+        endX,
+        containerWidth,
+        firstAnchorEndX,
+        secondAnchorStartX,
+      });
 
       const pathElement = svgInstance
         .path(pathData)
@@ -333,98 +352,7 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     },
   };
 
-  // FIX: Coordinated resize handler to prevent conflicts
-  const handleResize = debounce(() => {
-    log("🔄 handleResize triggered, isMobile:", HencurveAnchors.isMobile);
-    log("📱 Window size:", window.innerWidth, "x", window.innerHeight);
-
-    if (!HencurveAnchors.isMobile && !HencurveAnchors.isResizing) {
-      HencurveAnchors.isResizing = true;
-
-      // FIX: Small delay to let other scripts finish their resize operations
-      setTimeout(() => {
-        log("🖥️ Desktop resize - destroying and reinitializing");
-        HencurveAnchors._destroy();
-
-        requestAnimationFrame(() => {
-          log("🔄 Reinitializing after resize...");
-          HencurveAnchors._init();
-          HencurveAnchors.isResizing = false;
-        });
-      }, 100); // Delay to avoid conflicts with other resize handlers
-    } else {
-      log("📱 Mobile resize - skipping");
-    }
-  }, 350); // FIX: Slightly longer debounce than pinwheel script (250ms)
-
-  // Initialize GSAP MatchMedia
-  const mm = gsap.matchMedia();
-  const breakPoint = 1024;
-
-  mm.add(`(max-width: ${breakPoint}px)`, () => {
-    log("📱 MatchMedia: Mobile breakpoint triggered");
-    HencurveAnchors.isMobile = true;
-    HencurveAnchors._destroy(); // Destroy on mobile
-  });
-
-  mm.add(`(min-width: ${breakPoint + 1}px)`, () => {
-    log("🖥️ MatchMedia: Desktop breakpoint triggered");
-    HencurveAnchors.isMobile = false;
-    // FIX: Add timing for proper resize positioning
-    requestAnimationFrame(() => {
-      HencurveAnchors._init(); // Initialize on desktop
-    });
-  });
-
-  // Initialize Resizing on DOMContentLoaded
-  document.addEventListener("DOMContentLoaded", () => {
-    log("📄 DOMContentLoaded - adding resize listener");
-
-    // FIX: Test multiple ways to add resize listener
-    const testResize = () => {
-      log("🧪 TEST: Resize event fired!");
-      handleResize();
-    };
-
-    // Try different approaches
-    window.addEventListener("resize", testResize);
-    log("✅ Resize listener added via addEventListener");
-
-    // Also try jQuery approach as backup
-    $(window).on("resize", () => {
-      log("🧪 jQuery resize fired!");
-      handleResize();
-    });
-    log("✅ jQuery resize listener added");
-
-    // Test if window object is available
-    log("🔍 Window object check:", {
-      hasWindow: typeof window !== "undefined",
-      hasAddEventListener: typeof window.addEventListener === "function",
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
-    });
-
-    // Manual test function
-    window.testResize = () => {
-      log("🔧 Manual resize test triggered");
-      handleResize();
-    };
-
-    // Test the manual function immediately
-    log("🧪 Testing manual resize function...");
-    setTimeout(() => {
-      window.testResize();
-    }, 1000);
-  });
-
-  // Fire an initial resize once page has fully loaded
-  window.addEventListener("load", () => {
-    log("🌐 Window load event - firing initial resize");
-    handleResize();
-  });
-
-  // FIX: Simplified resize handler for testing
+  // FIX: Define both resize handlers
   const handleResizeSimple = () => {
     log("🔄 handleResizeSimple triggered - NO DEBOUNCE");
     log("📱 Window size:", window.innerWidth, "x", window.innerHeight);
@@ -460,6 +388,74 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     }
   }, 350);
 
-  window.addEventListener("resize", testResize);
-  window.addEventListener("resize", handleResizeSimple); // Test without debounce
+  // Initialize GSAP MatchMedia
+  const mm = gsap.matchMedia();
+  const breakPoint = 1024;
+
+  mm.add(`(max-width: ${breakPoint}px)`, () => {
+    log("📱 MatchMedia: Mobile breakpoint triggered");
+    HencurveAnchors.isMobile = true;
+    HencurveAnchors._destroy(); // Destroy on mobile
+  });
+
+  mm.add(`(min-width: ${breakPoint + 1}px)`, () => {
+    log("🖥️ MatchMedia: Desktop breakpoint triggered");
+    HencurveAnchors.isMobile = false;
+    // FIX: Add timing for proper resize positioning
+    requestAnimationFrame(() => {
+      HencurveAnchors._init(); // Initialize on desktop
+    });
+  });
+
+  // FIX: Initialize Resizing on DOMContentLoaded with better debugging
+  document.addEventListener("DOMContentLoaded", () => {
+    log("📄 DOMContentLoaded - adding resize listener");
+
+    // Test if resize listener is working
+    const testResize = () => {
+      log("🧪 TEST: Resize event fired!");
+      handleResize();
+    };
+
+    // Test different approaches
+    window.addEventListener("resize", testResize);
+    log("✅ Resize listener added via addEventListener");
+
+    // Also try jQuery approach as backup
+    $(window).on("resize", () => {
+      log("🧪 jQuery resize fired!");
+      handleResize();
+    });
+    log("✅ jQuery resize listener added");
+
+    // Add simple handler for immediate feedback
+    window.addEventListener("resize", handleResizeSimple);
+    log("✅ Simple resize listener added");
+
+    // Test if window object is available
+    log("🔍 Window object check:", {
+      hasWindow: typeof window !== "undefined",
+      hasAddEventListener: typeof window.addEventListener === "function",
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
+    });
+
+    // Manual test function
+    window.testResize = () => {
+      log("🔧 Manual resize test triggered");
+      handleResize();
+    };
+
+    // Test the manual function immediately
+    log("🧪 Testing manual resize function...");
+    setTimeout(() => {
+      window.testResize();
+    }, 1000);
+  });
+
+  // Fire an initial resize once page has fully loaded
+  window.addEventListener("load", () => {
+    log("🌐 Window load event - firing initial resize");
+    handleResize();
+  });
 })(document, window, $);
