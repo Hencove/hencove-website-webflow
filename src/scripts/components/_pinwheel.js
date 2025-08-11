@@ -31,7 +31,6 @@ const _DEBUG_ = true;
         return;
       }
 
-      // Enhanced debugging for container
       if (_DEBUG_) {
         const containerRect = this.section.getBoundingClientRect();
         console.log(
@@ -39,9 +38,6 @@ const _DEBUG_ = true;
         );
         console.log(
           `PinWheel: Container dimensions - Width: ${containerRect.width}px, Height: ${containerRect.height}px`,
-        );
-        console.log(
-          `PinWheel: Container position - Left: ${containerRect.left}px, Top: ${containerRect.top}px`,
         );
       }
 
@@ -66,11 +62,10 @@ const _DEBUG_ = true;
       $(".do-motionpath-small").removeAttr("style");
 
       // Kill all ScrollTriggers associated with the section
-      let pageScrollTriggers = ScrollTrigger.getAll();
       let killedCount = 0;
-      pageScrollTriggers.forEach((pageScrollTrigger) => {
-        if (pageScrollTrigger.vars.id == "pinwheelTrigger") {
-          pageScrollTrigger.kill();
+      ScrollTrigger.getAll().forEach((trigger) => {
+        if (trigger.vars.id === "pinwheelTrigger") {
+          trigger.kill();
           killedCount++;
         }
       });
@@ -91,21 +86,10 @@ const _DEBUG_ = true;
         return;
       }
 
-      // Enhanced debugging for SVG container
       if (_DEBUG_) {
         const containerRect = this.svgContainer.getBoundingClientRect();
-        const computedStyle = window.getComputedStyle(this.svgContainer);
         console.log(
           `PinWheel: SVG container dimensions - Width: ${containerRect.width}px, Height: ${containerRect.height}px`,
-        );
-        console.log(
-          `PinWheel: SVG container position - Left: ${containerRect.left}px, Top: ${containerRect.top}px`,
-        );
-        console.log(
-          `PinWheel: SVG container CSS position: ${computedStyle.position}`,
-        );
-        console.log(
-          `PinWheel: SVG container CSS transform: ${computedStyle.transform}`,
         );
       }
 
@@ -115,7 +99,7 @@ const _DEBUG_ = true;
         .addClass("is-motionpath-svg");
 
       // Wait for SVG to be properly rendered
-      requestAnimationFrame(async () => {
+      requestAnimationFrame(() => {
         const svgElement = this.svgContainer.querySelector("svg");
         this.svgWidth = svgElement.getBoundingClientRect().width;
         this.svgHeight = svgElement.getBoundingClientRect().height;
@@ -124,13 +108,9 @@ const _DEBUG_ = true;
           console.log(
             `PinWheel: SVG dimensions - Width: ${this.svgWidth}px, Height: ${this.svgHeight}px`,
           );
-          const svgRect = svgElement.getBoundingClientRect();
-          console.log(
-            `PinWheel: SVG position - Left: ${svgRect.left}px, Top: ${svgRect.top}px`,
-          );
 
           // Add visual debug indicator at SVG center
-          const debugCenter = this.svgInstance.circle(10).attr({
+          this.svgInstance.circle(10).attr({
             cx: this.svgWidth / 2,
             cy: this.svgHeight / 2,
             fill: "red",
@@ -142,13 +122,7 @@ const _DEBUG_ = true;
           );
         }
 
-        // Draw paths with correct dimensions
         this._drawEllipsePaths();
-
-        // Wait for all items and images to be ready
-        await this._waitForAllItemsReady();
-
-        // Now initialize motion paths with confidence that everything is ready
         this._initializeMotionPaths();
       });
     },
@@ -156,10 +130,10 @@ const _DEBUG_ = true;
     _drawEllipsePaths() {
       if (_DEBUG_) console.log("PinWheel: Drawing ellipse paths...");
 
-      let cont3xl = "54rem";
-      let smallDiameter = convertRemToPixels(cont3xl) * 1.3;
-      let mediumDiameter = convertRemToPixels(cont3xl) * 1.6;
-      let largeDiameter = convertRemToPixels(cont3xl) * 1.9;
+      const cont3xl = "54rem";
+      const smallDiameter = convertRemToPixels(cont3xl) * 1.3;
+      const mediumDiameter = convertRemToPixels(cont3xl) * 1.6;
+      const largeDiameter = convertRemToPixels(cont3xl) * 1.9;
 
       if (_DEBUG_) {
         console.log(
@@ -170,14 +144,14 @@ const _DEBUG_ = true;
         );
       }
 
-      this._drawEllipse("circlePathSmall", smallDiameter, "transparent");
-      this._drawEllipse("circlePathMedium", mediumDiameter, "transparent");
-      this._drawEllipse("circlePathLarge", largeDiameter, "transparent");
+      this._drawEllipse("circlePathSmall", smallDiameter);
+      this._drawEllipse("circlePathMedium", mediumDiameter);
+      this._drawEllipse("circlePathLarge", largeDiameter);
 
       if (_DEBUG_) console.log("PinWheel: All ellipse paths drawn");
     },
 
-    _drawEllipse(id, diameter, strokeColor) {
+    _drawEllipse(id, diameter) {
       if (_DEBUG_) {
         console.log(
           `PinWheel: Drawing ellipse ${id} with diameter ${diameter}px`,
@@ -187,24 +161,14 @@ const _DEBUG_ = true;
         );
       }
 
-      let ellipse = this.svgInstance.ellipse(diameter, diameter).attr({
+      const ellipse = this.svgInstance.ellipse(diameter, diameter).attr({
         id,
         cx: this.svgWidth / 2,
         cy: this.svgHeight / 2,
-        stroke: _DEBUG_ ? "rgba(255, 0, 0, 0.3)" : strokeColor, // Make visible in debug mode
+        stroke: _DEBUG_ ? "rgba(255, 0, 0, 0.3)" : "transparent",
         "stroke-width": _DEBUG_ ? 2 : 0,
         fill: "none",
       });
-
-      if (_DEBUG_) {
-        const ellipseElement = document.getElementById(id);
-        if (ellipseElement) {
-          const bbox = ellipseElement.getBBox();
-          console.log(
-            `PinWheel: Ellipse ${id} bounding box - x: ${bbox.x}, y: ${bbox.y}, width: ${bbox.width}, height: ${bbox.height}`,
-          );
-        }
-      }
 
       this._rotateEllipse(id, ellipse);
       MotionPathPlugin.convertToPath(`#${id}`);
@@ -212,23 +176,23 @@ const _DEBUG_ = true;
       if (_DEBUG_) {
         console.log(`PinWheel: Ellipse ${id} converted to motion path`);
         // Log the actual path data
-        const pathElement = document.getElementById(id);
-        if (pathElement && pathElement.tagName === "path") {
-          console.log(
-            `PinWheel: Path ${id} d attribute: ${pathElement.getAttribute("d")}`,
-          );
-        }
+        setTimeout(() => {
+          const pathElement = document.getElementById(id);
+          if (pathElement && pathElement.tagName === "path") {
+            console.log(
+              `PinWheel: Path ${id} d attribute: ${pathElement.getAttribute("d")}`,
+            );
+          }
+        }, 0);
       }
     },
 
     _rotateEllipse(id, ellipse) {
       let rotation = 0;
 
-      if (id == "circlePathSmall") {
-        rotation = 0;
-      } else if (id == "circlePathMedium") {
+      if (id === "circlePathMedium") {
         rotation = 90;
-      } else if (id == "circlePathLarge") {
+      } else if (id === "circlePathLarge") {
         rotation = 45;
       }
 
@@ -243,155 +207,6 @@ const _DEBUG_ = true;
           `PinWheel: Rotated ${id} by ${rotation} degrees around center (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
         );
       }
-    },
-
-    // Wait for lazy-loaded images to complete
-    _waitForImagesLoaded(selector) {
-      return new Promise((resolve) => {
-        const items = document.querySelectorAll(
-          `.is-hidden-pinwheel-items-container ${selector}`,
-        );
-
-        if (items.length === 0) {
-          resolve();
-          return;
-        }
-
-        let loadedCount = 0;
-        let totalImages = 0;
-
-        // Find all images within the items
-        items.forEach((item) => {
-          const images = item.querySelectorAll("img");
-          totalImages += images.length;
-
-          images.forEach((img, imgIndex) => {
-            if (img.complete && img.naturalHeight !== 0) {
-              // Image already loaded
-              loadedCount++;
-              if (_DEBUG_)
-                console.log(`PinWheel: Image ${imgIndex + 1} already loaded`);
-            } else {
-              // Wait for image to load
-              const onLoad = () => {
-                loadedCount++;
-                if (_DEBUG_)
-                  console.log(
-                    `PinWheel: Image loaded (${loadedCount}/${totalImages})`,
-                  );
-
-                if (loadedCount === totalImages) {
-                  if (_DEBUG_)
-                    console.log(`PinWheel: All images loaded for ${selector}`);
-                  resolve();
-                }
-              };
-
-              const onError = () => {
-                loadedCount++; // Count errors as "loaded" to prevent hanging
-                if (_DEBUG_) console.warn(`PinWheel: Image failed to load`);
-
-                if (loadedCount === totalImages) {
-                  resolve();
-                }
-              };
-
-              img.addEventListener("load", onLoad, { once: true });
-              img.addEventListener("error", onError, { once: true });
-            }
-          });
-        });
-
-        // If no images found, resolve immediately
-        if (totalImages === 0) {
-          if (_DEBUG_) console.log(`PinWheel: No images found for ${selector}`);
-          resolve();
-        } else if (loadedCount === totalImages) {
-          // All images already loaded
-          resolve();
-        }
-
-        // Fallback timeout
-        setTimeout(() => {
-          if (_DEBUG_)
-            console.warn(`PinWheel: Image loading timeout for ${selector}`);
-          resolve();
-        }, 5000);
-      });
-    },
-
-    // Wait for elements to have proper dimensions
-    _waitForElementsReady(selector) {
-      return new Promise((resolve) => {
-        const items = document.querySelectorAll(
-          `.is-hidden-pinwheel-items-container ${selector}`,
-        );
-
-        if (items.length === 0) {
-          if (_DEBUG_)
-            console.warn(`PinWheel: No items found for selector ${selector}`);
-          resolve();
-          return;
-        }
-
-        // Check if all items have non-zero dimensions and are positioned
-        const checkItemsReady = () => {
-          let allReady = true;
-
-          items.forEach((item, index) => {
-            const rect = item.getBoundingClientRect();
-            const computedStyle = window.getComputedStyle(item);
-
-            // Check if item has dimensions and is visible
-            if (
-              rect.width === 0 ||
-              rect.height === 0 ||
-              computedStyle.display === "none"
-            ) {
-              allReady = false;
-              if (_DEBUG_)
-                console.log(
-                  `PinWheel: Item ${index + 1} not ready - width: ${rect.width}, height: ${rect.height}, display: ${computedStyle.display}`,
-                );
-            }
-          });
-
-          if (allReady) {
-            if (_DEBUG_)
-              console.log(`PinWheel: All items ready for ${selector}`);
-            resolve();
-          } else {
-            // Use requestAnimationFrame to check again next frame
-            requestAnimationFrame(checkItemsReady);
-          }
-        };
-
-        checkItemsReady();
-      });
-    },
-
-    // Wait for all motion path items to be ready
-    async _waitForAllItemsReady() {
-      if (_DEBUG_)
-        console.log(
-          "PinWheel: Waiting for all items and images to be ready...",
-        );
-
-      // First wait for images to load
-      await Promise.all([
-        this._waitForImagesLoaded(".do-motionpath-small"),
-        this._waitForImagesLoaded(".do-motionpath-medium"),
-        this._waitForImagesLoaded(".do-motionpath-large"),
-      ]);
-
-      // Then wait for layout to stabilize
-      await Promise.all([
-        this._waitForElementsReady(".do-motionpath-small"),
-        this._waitForElementsReady(".do-motionpath-medium"),
-        this._waitForElementsReady(".do-motionpath-large"),
-      ]);
-
-      if (_DEBUG_) console.log("PinWheel: All items and images are ready");
     },
 
     _initializeMotionPaths() {
@@ -411,18 +226,6 @@ const _DEBUG_ = true;
         console.log(
           `PinWheel: Initializing motion path for ${selector} with ${items.length} items on path ${pathId}`,
         );
-
-        // Log initial positions of items
-        items.each(function (index) {
-          const rect = this.getBoundingClientRect();
-          const computedStyle = window.getComputedStyle(this);
-          console.log(
-            `PinWheel: Item ${index + 1} initial position - Left: ${rect.left}px, Top: ${rect.top}px`,
-          );
-          console.log(
-            `PinWheel: Item ${index + 1} CSS transform: ${computedStyle.transform}`,
-          );
-        });
       }
 
       items.each(function (index) {
@@ -468,14 +271,6 @@ const _DEBUG_ = true;
                 }
               : undefined,
           },
-          onComplete: _DEBUG_
-            ? () => {
-                const rect = this.getBoundingClientRect();
-                console.log(
-                  `PinWheel: Item ${index + 1} final position - Left: ${rect.left}px, Top: ${rect.top}px`,
-                );
-              }
-            : undefined,
         });
       });
     },
