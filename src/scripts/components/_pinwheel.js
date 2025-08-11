@@ -9,7 +9,7 @@ import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
 // Global debug flag - set to false for production
-const _DEBUG_ = true;
+const _DEBUG_ = false;
 
 (function (document, window, $) {
   const PinWheel = {
