@@ -114,7 +114,7 @@ const _DEBUG_ = true;
         .size("100%", "100%")
         .addClass("is-motionpath-svg");
 
-      // Wait for next frame to ensure proper rendering
+      // Wait for SVG to be properly rendered
       requestAnimationFrame(async () => {
         const svgElement = this.svgContainer.querySelector("svg");
         this.svgWidth = svgElement.getBoundingClientRect().width;
@@ -142,15 +142,18 @@ const _DEBUG_ = true;
           );
         }
 
-        // Wait for path drawing and conversion to complete
-        await this._drawEllipsePaths();
+        // Draw paths with correct dimensions
+        this._drawEllipsePaths();
 
-        // Now initialize motion paths with fully converted paths
+        // Wait for all items and images to be ready
+        await this._waitForAllItemsReady();
+
+        // Now initialize motion paths with confidence that everything is ready
         this._initializeMotionPaths();
       });
     },
 
-    async _drawEllipsePaths() {
+    _drawEllipsePaths() {
       if (_DEBUG_) console.log("PinWheel: Drawing ellipse paths...");
 
       let cont3xl = "54rem";
@@ -162,18 +165,16 @@ const _DEBUG_ = true;
         console.log(
           `PinWheel: Ellipse diameters - Small: ${smallDiameter}px, Medium: ${mediumDiameter}px, Large: ${largeDiameter}px`,
         );
+        console.log(
+          `PinWheel: SVG center point: (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
+        );
       }
 
-      // Draw all ellipses first
       this._drawEllipse("circlePathSmall", smallDiameter, "transparent");
       this._drawEllipse("circlePathMedium", mediumDiameter, "transparent");
       this._drawEllipse("circlePathLarge", largeDiameter, "transparent");
 
-      // Wait for next frame to ensure all convertToPath operations complete
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-
-      if (_DEBUG_)
-        console.log("PinWheel: All ellipse paths drawn and converted");
+      if (_DEBUG_) console.log("PinWheel: All ellipse paths drawn");
     },
 
     _drawEllipse(id, diameter, strokeColor) {
@@ -242,6 +243,155 @@ const _DEBUG_ = true;
           `PinWheel: Rotated ${id} by ${rotation} degrees around center (${this.svgWidth / 2}, ${this.svgHeight / 2})`,
         );
       }
+    },
+
+    // Wait for lazy-loaded images to complete
+    _waitForImagesLoaded(selector) {
+      return new Promise((resolve) => {
+        const items = document.querySelectorAll(
+          `.is-hidden-pinwheel-items-container ${selector}`,
+        );
+
+        if (items.length === 0) {
+          resolve();
+          return;
+        }
+
+        let loadedCount = 0;
+        let totalImages = 0;
+
+        // Find all images within the items
+        items.forEach((item) => {
+          const images = item.querySelectorAll("img");
+          totalImages += images.length;
+
+          images.forEach((img, imgIndex) => {
+            if (img.complete && img.naturalHeight !== 0) {
+              // Image already loaded
+              loadedCount++;
+              if (_DEBUG_)
+                console.log(`PinWheel: Image ${imgIndex + 1} already loaded`);
+            } else {
+              // Wait for image to load
+              const onLoad = () => {
+                loadedCount++;
+                if (_DEBUG_)
+                  console.log(
+                    `PinWheel: Image loaded (${loadedCount}/${totalImages})`,
+                  );
+
+                if (loadedCount === totalImages) {
+                  if (_DEBUG_)
+                    console.log(`PinWheel: All images loaded for ${selector}`);
+                  resolve();
+                }
+              };
+
+              const onError = () => {
+                loadedCount++; // Count errors as "loaded" to prevent hanging
+                if (_DEBUG_) console.warn(`PinWheel: Image failed to load`);
+
+                if (loadedCount === totalImages) {
+                  resolve();
+                }
+              };
+
+              img.addEventListener("load", onLoad, { once: true });
+              img.addEventListener("error", onError, { once: true });
+            }
+          });
+        });
+
+        // If no images found, resolve immediately
+        if (totalImages === 0) {
+          if (_DEBUG_) console.log(`PinWheel: No images found for ${selector}`);
+          resolve();
+        } else if (loadedCount === totalImages) {
+          // All images already loaded
+          resolve();
+        }
+
+        // Fallback timeout
+        setTimeout(() => {
+          if (_DEBUG_)
+            console.warn(`PinWheel: Image loading timeout for ${selector}`);
+          resolve();
+        }, 5000);
+      });
+    },
+
+    // Wait for elements to have proper dimensions
+    _waitForElementsReady(selector) {
+      return new Promise((resolve) => {
+        const items = document.querySelectorAll(
+          `.is-hidden-pinwheel-items-container ${selector}`,
+        );
+
+        if (items.length === 0) {
+          if (_DEBUG_)
+            console.warn(`PinWheel: No items found for selector ${selector}`);
+          resolve();
+          return;
+        }
+
+        // Check if all items have non-zero dimensions and are positioned
+        const checkItemsReady = () => {
+          let allReady = true;
+
+          items.forEach((item, index) => {
+            const rect = item.getBoundingClientRect();
+            const computedStyle = window.getComputedStyle(item);
+
+            // Check if item has dimensions and is visible
+            if (
+              rect.width === 0 ||
+              rect.height === 0 ||
+              computedStyle.display === "none"
+            ) {
+              allReady = false;
+              if (_DEBUG_)
+                console.log(
+                  `PinWheel: Item ${index + 1} not ready - width: ${rect.width}, height: ${rect.height}, display: ${computedStyle.display}`,
+                );
+            }
+          });
+
+          if (allReady) {
+            if (_DEBUG_)
+              console.log(`PinWheel: All items ready for ${selector}`);
+            resolve();
+          } else {
+            // Use requestAnimationFrame to check again next frame
+            requestAnimationFrame(checkItemsReady);
+          }
+        };
+
+        checkItemsReady();
+      });
+    },
+
+    // Wait for all motion path items to be ready
+    async _waitForAllItemsReady() {
+      if (_DEBUG_)
+        console.log(
+          "PinWheel: Waiting for all items and images to be ready...",
+        );
+
+      // First wait for images to load
+      await Promise.all([
+        this._waitForImagesLoaded(".do-motionpath-small"),
+        this._waitForImagesLoaded(".do-motionpath-medium"),
+        this._waitForImagesLoaded(".do-motionpath-large"),
+      ]);
+
+      // Then wait for layout to stabilize
+      await Promise.all([
+        this._waitForElementsReady(".do-motionpath-small"),
+        this._waitForElementsReady(".do-motionpath-medium"),
+        this._waitForElementsReady(".do-motionpath-large"),
+      ]);
+
+      if (_DEBUG_) console.log("PinWheel: All items and images are ready");
     },
 
     _initializeMotionPaths() {
