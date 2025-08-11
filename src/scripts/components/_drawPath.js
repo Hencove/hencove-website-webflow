@@ -21,9 +21,12 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       if (!this.containers.length) {
         return;
       }
-      //
-      this.containers.forEach((container) => {
-        this._drawSVG(container);
+
+      // FIX: Add timing for proper initial positioning
+      requestAnimationFrame(() => {
+        this.containers.forEach((container) => {
+          this._drawSVG(container);
+        });
       });
     },
 
@@ -45,6 +48,9 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
         // console.warn("Not enough anchors in container:", container);
         return;
       }
+
+      // FIX: Force layout recalculation for accurate positioning
+      container.offsetHeight;
 
       // Get positions of anchors relative to the container
       const firstAnchor = anchors[0].getBoundingClientRect();
@@ -89,7 +95,8 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
       // Anchor positions
       const startX = siteMargin;
-      const endX = $(window).width() - siteMargin;
+      // FIX: Use container width instead of window width for accurate positioning
+      const endX = $(container).width() - siteMargin;
 
       const startY =
         firstAnchor.y > secondAnchor.y ? svgHeight - strokeWidth : strokeWidth;
@@ -202,11 +209,13 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     },
   };
 
-  // Throttled resize handler
+  // FIX: Improved resize handler with proper timing
   const handleResize = debounce(() => {
     if (!HencurveAnchors.isMobile) {
       HencurveAnchors._destroy(); // Clear the SVG instance
-      HencurveAnchors._init(); // Reinitialize on desktop resize
+      requestAnimationFrame(() => {
+        HencurveAnchors._init(); // Reinitialize on desktop resize
+      });
     }
   }, 200);
 
@@ -221,7 +230,10 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
   mm.add(`(min-width: ${breakPoint + 1}px)`, () => {
     HencurveAnchors.isMobile = false;
-    HencurveAnchors._init(); // Initialize on desktop
+    // FIX: Add timing for proper resize positioning
+    requestAnimationFrame(() => {
+      HencurveAnchors._init(); // Initialize on desktop
+    });
   });
 
   // Initialize Resizing on DOMContentLoaded
