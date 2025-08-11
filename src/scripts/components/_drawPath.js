@@ -407,9 +407,9 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     });
   });
 
-  // FIX: Initialize Resizing on DOMContentLoaded with better debugging
-  document.addEventListener("DOMContentLoaded", () => {
-    log("📄 DOMContentLoaded - adding resize listener");
+  // FIX: Updated event listener setup to handle DOM ready state
+  const addEventListeners = () => {
+    log("📄 Adding resize listeners");
 
     // Test if resize listener is working
     const testResize = () => {
@@ -451,7 +451,14 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     setTimeout(() => {
       window.testResize();
     }, 1000);
-  });
+  };
+
+  // Add listeners immediately if DOM is ready, otherwise wait for DOMContentLoaded
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", addEventListeners);
+  } else {
+    addEventListeners();
+  }
 
   // Fire an initial resize once page has fully loaded
   window.addEventListener("load", () => {
