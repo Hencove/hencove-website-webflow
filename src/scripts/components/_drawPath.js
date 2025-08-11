@@ -325,6 +325,12 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     }
   }, 200);
 
+  // Add this to test if debounce is the issue
+  const handleResizeImmediate = () => {
+    log("⚡ handleResizeImmediate triggered (no debounce)");
+    handleResize();
+  };
+
   // Initialize GSAP MatchMedia
   const mm = gsap.matchMedia();
   const breakPoint = 1024;
@@ -347,7 +353,20 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
   // Initialize Resizing on DOMContentLoaded
   document.addEventListener("DOMContentLoaded", () => {
     log("📄 DOMContentLoaded - adding resize listener");
-    window.addEventListener("resize", handleResize); // Add resize listener
+
+    // Test if resize listener is working
+    const testResize = () => {
+      log("🧪 TEST: Resize event fired!");
+      handleResize();
+    };
+
+    window.addEventListener("resize", testResize); // Add resize listener
+
+    // Also add a manual test
+    window.testResize = () => {
+      log("🔧 Manual resize test triggered");
+      handleResize();
+    };
   });
 
   // Fire an initial resize once page has fully loaded
