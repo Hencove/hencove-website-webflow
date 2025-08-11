@@ -7,58 +7,104 @@ import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
 (function (document, window, $) {
+  // Debug flag - set to true to enable console logs
+  const DEBUG = true;
+
+  const log = (...args) => {
+    if (DEBUG) console.log(...args);
+  };
+
+  const warn = (...args) => {
+    if (DEBUG) console.warn(...args);
+  };
+
   let HencurveAnchors = {
     containers: undefined,
     isMobile: false, // Track media query state
 
     _init: function () {
+      log("🚀 _init called, isMobile:", this.isMobile);
+
       // Bail early if mobile
-      if (this.isMobile) return;
+      if (this.isMobile) {
+        log("❌ Bailing early - mobile detected");
+        return;
+      }
 
       this.containers = document.querySelectorAll(
         ".hencurve-anchors-container",
       );
+      log("📦 Found containers:", this.containers.length);
+
       if (!this.containers.length) {
+        log("❌ No containers found");
         return;
       }
 
       // FIX: Add timing for proper initial positioning
       requestAnimationFrame(() => {
-        this.containers.forEach((container) => {
+        log("🎬 Starting container processing...");
+        this.containers.forEach((container, index) => {
+          log(`📋 Processing container ${index + 1}:`, container);
           this._drawSVG(container);
         });
       });
     },
 
     _drawSVG: function (container) {
+      log("🎨 _drawSVG called for container:", container);
+
       let svgInstance = SVG()
         .addTo(container)
         .size("100%", "100%")
         .addClass("hencurve-anchors-svg");
 
+      log("✅ SVG instance created:", svgInstance);
       this._findAnchors(container, svgInstance);
     },
 
     _findAnchors: function (container, svgInstance) {
+      log("🔍 _findAnchors called");
+
       // Find anchors inside the container
       const anchors = container.querySelectorAll(".hencurve-anchor");
+      log("⚓ Found anchors:", anchors.length);
 
       // Bail early if less than two anchors
       if (anchors.length < 2) {
-        // console.warn("Not enough anchors in container:", container);
+        warn("❌ Not enough anchors in container:", container);
         return;
       }
 
-      // FIX: Force layout recalculation AND clear any cached positions
+      // FIX: Force layout recalculation for accurate positioning
       container.offsetHeight;
-
-      // FIX: Force a reflow to ensure fresh measurements
       window.getComputedStyle(container).height;
 
-      // Get fresh positions every time - don't cache these
-      const containerRect = container.getBoundingClientRect();
+      // Get positions of anchors relative to the container
       const firstAnchor = anchors[0].getBoundingClientRect();
       const secondAnchor = anchors[1].getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+
+      log("📏 Container rect:", {
+        left: containerRect.left,
+        top: containerRect.top,
+        width: containerRect.width,
+        height: containerRect.height,
+      });
+
+      log("📏 First anchor rect:", {
+        left: firstAnchor.left,
+        top: firstAnchor.top,
+        width: firstAnchor.width,
+        height: firstAnchor.height,
+      });
+
+      log("📏 Second anchor rect:", {
+        left: secondAnchor.left,
+        top: secondAnchor.top,
+        width: secondAnchor.width,
+        height: secondAnchor.height,
+      });
 
       const firstAnchorPos = {
         x: firstAnchor.left - containerRect.left,
@@ -72,8 +118,14 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
         width: secondAnchor.width,
       };
 
+      log("📍 Calculated positions:", {
+        first: firstAnchorPos,
+        second: secondAnchorPos,
+      });
+
       // Get tailwind color from first Anchor
       const curveColor = $(anchors[0]).css("color");
+      log("🎨 Curve color:", curveColor);
 
       // Pass positions to the path drawing method
       this._drawPath(
@@ -92,6 +144,11 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       secondAnchor,
       curveColor,
     ) {
+      log("✏️ _drawPath called with positions:", {
+        first: firstAnchor,
+        second: secondAnchor,
+      });
+
       const siteMargin = 36;
       const svgHeight = $(container).height();
       const strokeWidth = 6;
@@ -99,7 +156,17 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       // Anchor positions
       const startX = siteMargin;
       // FIX: Use container width instead of window width for accurate positioning
-      const endX = $(container).width() - siteMargin;
+      const containerWidth = $(container).width();
+      const endX = containerWidth - siteMargin;
+
+      log("📐 Drawing calculations:", {
+        containerWidth,
+        svgHeight,
+        startX,
+        endX,
+        siteMargin,
+        strokeWidth,
+      });
 
       const startY =
         firstAnchor.y > secondAnchor.y ? svgHeight - strokeWidth : strokeWidth;
@@ -120,10 +187,19 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
       const arcSpace = totalSpace / 2;
 
+      log("🔧 Path calculations:", {
+        startY,
+        endY,
+        firstAnchorEndX,
+        firstAnchorEndY,
+        secondAnchorStartX,
+        secondAnchorStartY,
+        totalSpace,
+        arcSpace,
+      });
+
       if (arcSpace < 0) {
-        console.warn(
-          "Not enough space for arcs. Adjust layout or stroke width.",
-        );
+        warn("❌ Not enough space for arcs. Adjust layout or stroke width.");
         return;
       }
 
@@ -147,7 +223,9 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
       pathData += `H ${endX} \n`;
 
-      svgInstance
+      log("📝 Final path data:", pathData);
+
+      const pathElement = svgInstance
         .path(pathData)
         .stroke({
           color: curveColor,
@@ -155,10 +233,14 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
         })
         .fill("none");
 
+      log("✅ Path element created:", pathElement);
+
       this.onCompleteEvent(container);
     },
 
     animateSVG(container) {
+      log("🎭 animateSVG called for container:", container);
+
       const reversePathDraw = false;
       gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin);
 
@@ -166,6 +248,7 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
         $("body").hasClass("error404") ||
         $(container).hasClass("is-about-us-hero")
       ) {
+        log("🎬 Using immediate animation");
         gsap.fromTo(
           ".hencurve-anchors-svg path",
           { drawSVG: "0%" }, // Start fully hidden
@@ -174,6 +257,7 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
           },
         );
       } else {
+        log("🎬 Using scroll trigger animation");
         gsap.fromTo(
           ".hencurve-anchors-svg path",
           { drawSVG: reversePathDraw ? "100% 100%" : "0% 0%" }, // Start fully hidden
@@ -192,6 +276,8 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     },
 
     onCompleteEvent(container) {
+      log("🎉 onCompleteEvent called");
+
       // Emit a custom event when the paths are ready
       const event = new CustomEvent("hencurvesPathReady", {
         detail: {
@@ -207,22 +293,35 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     },
 
     _destroy: function () {
+      log("💥 _destroy called");
+
+      const svgs = $(".hencurve-anchors-container svg");
+      log("🗑️ Found SVGs to remove:", svgs.length);
+
       // Clear SVGs inside all containers
-      $(".hencurve-anchors-container svg").remove();
+      svgs.remove();
+
+      log("✅ SVGs removed");
     },
   };
 
-  // FIX: Improved resize handler with better timing
+  // FIX: Improved resize handler with debugging
   const handleResize = debounce(() => {
+    log("🔄 handleResize triggered, isMobile:", HencurveAnchors.isMobile);
+    log("📱 Window size:", window.innerWidth, "x", window.innerHeight);
+
     if (!HencurveAnchors.isMobile) {
+      log("🖥️ Desktop resize - destroying and reinitializing");
       HencurveAnchors._destroy(); // Clear the SVG instance
 
-      // Wait for layout to settle after destroy
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
+          log("🔄 Reinitializing after resize...");
           HencurveAnchors._init(); // Reinitialize with fresh positions
         });
       });
+    } else {
+      log("📱 Mobile resize - skipping");
     }
   }, 200);
 
@@ -231,11 +330,13 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
   const breakPoint = 1024;
 
   mm.add(`(max-width: ${breakPoint}px)`, () => {
+    log("📱 MatchMedia: Mobile breakpoint triggered");
     HencurveAnchors.isMobile = true;
     HencurveAnchors._destroy(); // Destroy on mobile
   });
 
   mm.add(`(min-width: ${breakPoint + 1}px)`, () => {
+    log("🖥️ MatchMedia: Desktop breakpoint triggered");
     HencurveAnchors.isMobile = false;
     // FIX: Add timing for proper resize positioning
     requestAnimationFrame(() => {
@@ -245,9 +346,13 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
   // Initialize Resizing on DOMContentLoaded
   document.addEventListener("DOMContentLoaded", () => {
+    log("📄 DOMContentLoaded - adding resize listener");
     window.addEventListener("resize", handleResize); // Add resize listener
   });
 
   // Fire an initial resize once page has fully loaded
-  window.addEventListener("load", handleResize);
+  window.addEventListener("load", () => {
+    log("🌐 Window load event - firing initial resize");
+    handleResize();
+  });
 })(document, window, $);
