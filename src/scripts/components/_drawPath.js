@@ -1,4 +1,5 @@
 import { debounce } from "../_utilities";
+import { convertRemToPixels } from "../_utilities";
 import { SVG } from "@svgdotjs/svg.js";
 import $ from "jquery";
 import { gsap } from "gsap";
