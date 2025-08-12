@@ -78,8 +78,8 @@ const pageDraw = {
 
   // Create and inject SVGs, and handle animations
   drawSVGs(block) {
-    const siteMargin = 32;
-    const strokeWidth = 6;
+    const siteMargin = convertRemToPixels("2.25rem");
+    const strokeWidth = convertRemToPixels("0.5rem");
 
     const $textContainer = $(".textContainer", block);
     const blockWrapper = $(block).parents(".hencurve-parent");

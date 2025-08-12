@@ -154,9 +154,9 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
         second: secondAnchor,
       });
 
-      const siteMargin = 36;
+      const siteMargin = convertRemToPixels("2.25rem");
       const svgHeight = $(container).height();
-      const strokeWidth = 6;
+      const strokeWidth = convertRemToPixels("0.5rem");
 
       // Anchor positions
       const startX = siteMargin;
