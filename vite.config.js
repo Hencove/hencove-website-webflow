@@ -21,10 +21,12 @@ export default defineConfig(({ mode }) => {
         },
         output: {
           // Use hashed filenames for better caching
-          entryFileNames: prod ? "assets/[name].[hash].js" : "assets/[name].js",
+          entryFileNames: prod
+            ? "assets/[name].[hash].js"
+            : "assets/[name].[hash].js",
           assetFileNames: prod
             ? "assets/[name].[hash].[ext]"
-            : "assets/[name].[ext]",
+            : "assets/[name].[hash].[ext]",
         },
       },
 
