@@ -24,27 +24,21 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     isResizing: false, // FIX: Add resize protection flag
 
     _init: function () {
-      log("🚀 _init called, isMobile:", this.isMobile);
-
       // Bail early if mobile
       if (this.isMobile) {
-        log("❌ Bailing early - mobile detected");
         return;
       }
 
       this.containers = document.querySelectorAll(
         ".hencurve-anchors-container",
       );
-      log("📦 Found containers:", this.containers.length);
 
       if (!this.containers.length) {
-        log("❌ No containers found");
         return;
       }
 
       // FIX: Add timing for proper initial positioning
       requestAnimationFrame(() => {
-        log("🎬 Starting container processing...");
         this.containers.forEach((container, index) => {
           log(`📋 Processing container ${index + 1}:`, container);
           this._drawSVG(container);
@@ -90,27 +84,6 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       const secondAnchor = anchors[1].getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
 
-      log("📏 Container rect:", {
-        left: containerRect.left,
-        top: containerRect.top,
-        width: containerRect.width,
-        height: containerRect.height,
-      });
-
-      log("📏 First anchor rect:", {
-        left: firstAnchor.left,
-        top: firstAnchor.top,
-        width: firstAnchor.width,
-        height: firstAnchor.height,
-      });
-
-      log("📏 Second anchor rect:", {
-        left: secondAnchor.left,
-        top: secondAnchor.top,
-        width: secondAnchor.width,
-        height: secondAnchor.height,
-      });
-
       const firstAnchorPos = {
         x: firstAnchor.left - containerRect.left,
         y: firstAnchor.top - containerRect.top + firstAnchor.height,
@@ -149,11 +122,6 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       secondAnchor,
       curveColor,
     ) {
-      log("✏️ _drawPath called with positions:", {
-        first: firstAnchor,
-        second: secondAnchor,
-      });
-
       const siteMargin = convertRemToPixels("2.25rem");
       const svgHeight = $(container).height();
       const strokeWidth = convertRemToPixels("0.5rem");
@@ -163,15 +131,6 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       // FIX: Use container width instead of window width for accurate positioning
       const containerWidth = $(container).width();
       const endX = containerWidth - siteMargin;
-
-      log("📐 Drawing calculations:", {
-        containerWidth,
-        svgHeight,
-        startX,
-        endX,
-        siteMargin,
-        strokeWidth,
-      });
 
       const startY =
         firstAnchor.y > secondAnchor.y ? svgHeight - strokeWidth : strokeWidth;
@@ -191,17 +150,6 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       const totalSpace = secondAnchorStartX - firstAnchorEndX;
       const arcSpace = totalSpace / 2;
 
-      log("🔧 Path calculations:", {
-        startY,
-        endY,
-        firstAnchorEndX,
-        firstAnchorEndY,
-        secondAnchorStartX,
-        secondAnchorStartY,
-        totalSpace,
-        arcSpace,
-      });
-
       if (arcSpace < 0) {
         warn("❌ Not enough space for arcs. Adjust layout or stroke width.");
         return;
@@ -211,12 +159,6 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       const arc1StartX = firstAnchorEndX + arcSpace - arcRadius;
 
       // FIX: Add detailed logging for each path component
-      log("🧮 Detailed path calculations:", {
-        arcRadius,
-        arc1StartX,
-        "firstAnchorEndX + arcSpace": firstAnchorEndX + arcSpace,
-        "arcSpace - arcRadius": arcSpace - arcRadius,
-      });
 
       let pathData = `M ${startX}, ${startY} \n`;
       pathData += `H ${arc1StartX} \n`;
@@ -232,18 +174,6 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       } \n`;
 
       pathData += `H ${endX} \n`;
-
-      // FIX: Add timestamp to see if this is being called on resize
-      const timestamp = new Date().toLocaleTimeString();
-      log(`📝 [${timestamp}] Final path data:`, pathData);
-      log(`📝 [${timestamp}] Key values:`, {
-        startX,
-        arc1StartX,
-        endX,
-        containerWidth,
-        firstAnchorEndX,
-        secondAnchorStartX,
-      });
 
       const pathElement = svgInstance
         .path(pathData)
@@ -409,48 +339,7 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
   // FIX: Updated event listener setup to handle DOM ready state
   const addEventListeners = () => {
-    log("📄 Adding resize listeners");
-
-    // Test if resize listener is working
-    const testResize = () => {
-      log("🧪 TEST: Resize event fired!");
-      handleResize();
-    };
-
-    // Test different approaches
-    window.addEventListener("resize", testResize);
-    log("✅ Resize listener added via addEventListener");
-
-    // Also try jQuery approach as backup
-    $(window).on("resize", () => {
-      log("🧪 jQuery resize fired!");
-      handleResize();
-    });
-    log("✅ jQuery resize listener added");
-
-    // Add simple handler for immediate feedback
-    window.addEventListener("resize", handleResizeSimple);
-    log("✅ Simple resize listener added");
-
-    // Test if window object is available
-    log("🔍 Window object check:", {
-      hasWindow: typeof window !== "undefined",
-      hasAddEventListener: typeof window.addEventListener === "function",
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
-    });
-
-    // Manual test function
-    window.testResize = () => {
-      log("🔧 Manual resize test triggered");
-      handleResize();
-    };
-
-    // Test the manual function immediately
-    log("🧪 Testing manual resize function...");
-    setTimeout(() => {
-      window.testResize();
-    }, 1000);
+    window.addEventListener("resize", handleResize);
   };
 
   // Add listeners immediately if DOM is ready, otherwise wait for DOMContentLoaded
