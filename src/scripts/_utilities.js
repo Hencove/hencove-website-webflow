@@ -24,10 +24,30 @@ const throttle = (func, limit) => {
 };
 //
 const convertRemToPixels = function (rem) {
-  return (
-    parseFloat(rem.replace(/[^0-9]/g, "")) *
-    parseFloat(getComputedStyle(document.documentElement).fontSize)
-  );
+  // Handle numeric input directly
+  if (typeof rem === "number") {
+    return (
+      rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
+    );
+  }
+
+  // Handle string input
+  if (typeof rem === "string") {
+    // Extract numeric value (including decimals and negatives)
+    const numericValue = parseFloat(rem.replace(/[^\d.-]/g, ""));
+
+    // Validate the extracted value
+    if (isNaN(numericValue)) {
+      throw new Error("Invalid REM value provided");
+    }
+
+    return (
+      numericValue *
+      parseFloat(getComputedStyle(document.documentElement).fontSize)
+    );
+  }
+
+  throw new Error("REM value must be a number or string");
 };
 
 export { debounce, throttle, convertRemToPixels };

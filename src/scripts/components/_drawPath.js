@@ -122,9 +122,9 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       secondAnchor,
       curveColor,
     ) {
-      const siteMargin = convertRemToPixels("2.25rem");
+      let siteMargin = convertRemToPixels("2.25rem");
       const svgHeight = $(container).height();
-      const strokeWidth = convertRemToPixels("0.5rem");
+      let strokeWidth = convertRemToPixels("0.5rem");
 
       // Anchor positions
       const startX = siteMargin;
