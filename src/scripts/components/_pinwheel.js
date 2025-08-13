@@ -131,9 +131,12 @@ const _DEBUG_ = false;
       if (_DEBUG_) console.log("PinWheel: Drawing ellipse paths...");
 
       // const cont3xl = "54rem";
-      const pwInnerWidth = document.querySelector(
-        ".home-pinwheel_container",
-      ).offsetWidth;
+      const pwContainer = document.querySelector(".home-pinwheel_container");
+      const pwInnerWidth = Math.max(
+        pwContainer.offsetWidth,
+        pwContainer.offsetHeight,
+      );
+
       const smallDiameter = pwInnerWidth * 1.3;
       const mediumDiameter = pwInnerWidth * 1.6;
       const largeDiameter = pwInnerWidth * 1.9;
