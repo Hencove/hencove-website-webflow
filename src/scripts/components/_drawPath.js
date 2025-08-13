@@ -207,10 +207,7 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       const uniqueId = `hencurve-${container.id || Date.now()}`;
       log("🏷️ Using unique ScrollTrigger ID:", uniqueId);
 
-      if (
-        $("body").hasClass("error404") ||
-        $(container).hasClass("is-about-us-hero")
-      ) {
+      if ($(container).hasClass("is-animate-no-scroll")) {
         log("🎬 Using immediate animation");
         gsap.fromTo(
           pathElement,
