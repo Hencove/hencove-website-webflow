@@ -134,9 +134,9 @@ const _DEBUG_ = false;
       const pwInnerWidth = document.querySelector(
         ".home-pinwheel_container",
       ).offsetWidth;
-      const smallDiameter = convertRemToPixels(pwInnerWidth) * 1.3;
-      const mediumDiameter = convertRemToPixels(pwInnerWidth) * 1.6;
-      const largeDiameter = convertRemToPixels(pwInnerWidth) * 1.9;
+      const smallDiameter = pwInnerWidth * 1.3;
+      const mediumDiameter = pwInnerWidth * 1.6;
+      const largeDiameter = pwInnerWidth * 1.9;
 
       // Set section height to be just bigger than the large diameter circle
       document.querySelector(
