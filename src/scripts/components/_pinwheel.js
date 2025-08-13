@@ -130,10 +130,18 @@ const _DEBUG_ = false;
     _drawEllipsePaths() {
       if (_DEBUG_) console.log("PinWheel: Drawing ellipse paths...");
 
-      const cont3xl = "54rem";
-      const smallDiameter = convertRemToPixels(cont3xl) * 1.3;
-      const mediumDiameter = convertRemToPixels(cont3xl) * 1.6;
-      const largeDiameter = convertRemToPixels(cont3xl) * 1.9;
+      // const cont3xl = "54rem";
+      const pwInnerWidth = document.querySelector(
+        ".home-pinwheel_container",
+      ).offsetWidth;
+      const smallDiameter = convertRemToPixels(pwInnerWidth) * 1.3;
+      const mediumDiameter = convertRemToPixels(pwInnerWidth) * 1.6;
+      const largeDiameter = convertRemToPixels(pwInnerWidth) * 1.9;
+
+      // Set section height to be just bigger than the large diameter circle
+      document.querySelector(
+        ".is-pinwheel-motionpath-container",
+      ).style.minHeight = `${pwInnerWidth * 2.2}px`;
 
       if (_DEBUG_) {
         console.log(
