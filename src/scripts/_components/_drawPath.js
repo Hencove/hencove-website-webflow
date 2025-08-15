@@ -280,17 +280,6 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     },
   };
 
-  // FIX: Define both resize handlers
-  const handleResizeSimple = () => {
-    log("🔄 handleResizeSimple triggered - NO DEBOUNCE");
-    log("📱 Window size:", window.innerWidth, "x", window.innerHeight);
-
-    if (!HencurveAnchors.isMobile) {
-      log("🖥️ Would destroy and reinit here");
-      // Don't actually destroy yet, just log
-    }
-  };
-
   const handleResize = debounce(() => {
     log(
       "🔄 handleResize triggered (DEBOUNCED), isMobile:",
