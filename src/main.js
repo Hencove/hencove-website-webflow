@@ -13,5 +13,6 @@ import "./scripts/_components/_path.js";
 import "./scripts/_components/_pinwheel.js";
 
 import "./scripts/about/card-size.js";
+import "./scripts/about/team-videos.js";
 
 console.log("Webflow assets loaded");
