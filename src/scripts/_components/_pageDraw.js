@@ -224,8 +224,8 @@ const pageDraw = {
 
     const gutterMobile = 16;
 
-    const svgWidth = $(block).outerWidth() - gutterMobile;
-    const strokeWidth = 6;
+    const svgWidth = $(block).outerWidth();
+    const strokeWidth = convertRemToPixels("0.5rem");
 
     // Define the path data for the line
     let pathData = `M ${gutterMobile},${strokeWidth / 2} H ${svgWidth}`;
@@ -239,7 +239,7 @@ const pageDraw = {
     svgStrokeInstance
       .path(pathData)
       .stroke({
-        color: "var(--color-yellow-600)",
+        color: "var(--base-color-brand--yellow-dark)",
         width: strokeWidth,
       })
       .fill("none");
