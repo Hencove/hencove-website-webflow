@@ -1,4 +1,4 @@
-import { R2_BASE_URL } from "../../main.js";
+import { R2_BASE_URL } from "../../config.js";
 
 function initTeamVideos() {
   const teamMembers = document.querySelectorAll(".about-team_team-member");
