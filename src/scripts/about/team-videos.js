@@ -7,7 +7,11 @@ function initTeamVideos() {
     const video = member.querySelector(".teamClip");
     const photo = member.querySelector(".team-member_photo");
 
-    if (video && video.hasAttribute("src") && video.src !== "") {
+    if (
+      video &&
+      video.hasAttribute("src") &&
+      video.getAttribute("src") !== ""
+    ) {
       member.addEventListener("mouseenter", () => {
         video.play();
         photo.style.opacity = 0;
