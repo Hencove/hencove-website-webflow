@@ -19,8 +19,13 @@ const equalizeCardHeights = () => {
   cards.forEach((card) => (card.style.minHeight = `${maxHeight}px`));
 };
 
-// Initialize on load
-equalizeCardHeights();
-
-// Handle resize with debouncing
-window.addEventListener("resize", debounce(equalizeCardHeights, 250));
+// Check if DOM is ready, if not wait for it
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    equalizeCardHeights();
+    window.addEventListener("resize", debounce(equalizeCardHeights, 250));
+  });
+} else {
+  equalizeCardHeights();
+  window.addEventListener("resize", debounce(equalizeCardHeights, 250));
+}
