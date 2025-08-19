@@ -10,7 +10,7 @@ $teams: "Bees", "Blobfish", "Ligers", "Echidnas";
   }
 
   // Hide .filter-label_card_close when it is checked
-  .filter-label_card_close:checked {
+  &:has(input[value="Close"]:checked) .filter-label_card_close {
     display: none;
   }
 
