@@ -2,6 +2,7 @@
 import "./styles/main.css";
 import "./styles/components/hero-hencurve.scss";
 import "./styles/pages/home.css";
+import "./styles/pages/about.scss";
 
 // Import all JavaScript
 import "./scripts/main.js";
@@ -14,5 +15,6 @@ import "./scripts/_components/_pinwheel.js";
 
 import "./scripts/about/card-size.js";
 import "./scripts/about/team-videos.js";
+import "./scripts/about/team-filter.js";
 
 console.log("Webflow assets loaded");
