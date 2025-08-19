@@ -9,8 +9,17 @@ $teams: "Bees", "Blobfish", "Ligers", "Echidnas";
     display: none;
   }
 
-  // Show filter label container when any radio button is checked
-  &:has(input[name="Team"]:checked) {
+  // Hide .filter-label_card_close when either it is checked, or no input Team is checked
+  &:has(input[name="Team"]:checked:not([value="Close"]))
+    or
+    &:has(input[name="Team"]:checked:disabled) {
+    .filter-label_card_close {
+      display: none;
+    }
+  }
+
+  // Show filter label container when any radio button other than "close" is checked
+  &:has(input[name="Team"]:checked:not([value="Close"])) {
     .about-team_filter-label-container {
       display: block;
     }
