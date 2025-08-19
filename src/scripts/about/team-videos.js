@@ -1,17 +1,33 @@
+import { R2_BASE_URL } from "../../config.js";
+
 function initTeamVideos() {
   const teamMembers = document.querySelectorAll(".about-team_team-member");
 
   if (!teamMembers.length) return;
 
   teamMembers.forEach((member) => {
+    const slugLink = member.querySelector(".team-member-slug");
+    const href = slugLink.getAttribute("href");
+    const slugPortion = href.split("/").pop();
     const video = member.querySelector(".teamClip");
     const photo = member.querySelector(".team-member_photo");
 
-    if (
-      video &&
-      video.hasAttribute("src") &&
-      video.getAttribute("src") !== ""
-    ) {
+    if (video && slugPortion) {
+      const isSafari = () => {
+        const ua = navigator.userAgent.toLowerCase();
+        return (
+          ua.includes("safari") &&
+          !ua.includes("chrome") &&
+          !ua.includes("chromium") &&
+          !ua.includes("android")
+        );
+      };
+
+      const videoSrc = isSafari
+        ? `${R2_BASE_URL}/team-video/hevc/${slugPortion}.mov`
+        : `${R2_BASE_URL}/team-video/webm/${slugPortion}.webm`;
+      video.src = videoSrc;
+
       member.addEventListener("mouseenter", () => {
         video.play();
         photo.style.opacity = 0;
