@@ -1,3 +1,4 @@
+// Debounce function
 const debounce = function (func, delay) {
   let timer;
   return function (...args) {
@@ -9,7 +10,7 @@ const debounce = function (func, delay) {
   };
 };
 
-//
+// Throttle function
 const throttle = (func, limit) => {
   let inThrottle;
   return function () {
