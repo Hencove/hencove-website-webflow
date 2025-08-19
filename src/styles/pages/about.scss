@@ -1,0 +1,32 @@
+// Team Filter Styles
+// Variables for team names
+$teams: "Bees", "Blobfish", "Ligers", "Echidnas";
+
+// About team filter section
+.about-team_filter-section {
+  // Filter label container - hidden by default
+  .about-team_filter-label-container {
+    display: none;
+  }
+
+  // Show filter label container when any radio button is checked
+  &:has(input[name="Team"]:checked) {
+    .about-team_filter-label-container {
+      display: block;
+    }
+
+    // Hide all animal icons by default when any radio is checked
+    .filter-label_animal-icon {
+      display: none;
+    }
+  }
+
+  // Show specific animal icons based on checked radio buttons
+  @each $team in $teams {
+    &:has(input[value="#{$team}"]:checked) {
+      .filter-label_animal-icon[hc-filter-team="#{$team}"] {
+        display: block;
+      }
+    }
+  }
+}
