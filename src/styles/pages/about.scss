@@ -21,21 +21,12 @@ $teams: "Bees", "Blobfish", "Ligers", "Echidnas";
 
   // Show filter label container when any radio button other than "close" is checked
   &:has(input[name="Team"]:checked:not([value="Close"])) {
-    .about-team_filter-label-container {
-      display: block;
-    }
-
-    // Hide all animal icons by default when any radio is checked
-    .filter-label_animal-icon {
-      display: none;
-    }
-  }
-
-  // Show specific animal icons based on checked radio buttons
-  @each $team in $teams {
-    &:has(input[value="#{$team}"]:checked) {
-      .filter-label_animal-icon[hc-filter-team="#{$team}"] {
-        display: block;
+    // Show the specific team filter label container based on selected team
+    @each $team in $teams {
+      &:has(input[value="#{$team}"]:checked) {
+        .about-team_filter-label-container[hc-filter-team="#{$team}"] {
+          display: block;
+        }
       }
     }
   }
