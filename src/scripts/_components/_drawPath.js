@@ -23,6 +23,7 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     containers: undefined,
     isMobile: false, // Track media query state
     isResizing: false, // FIX: Add resize protection flag
+    animatedContainers: new Set(), // FIX: Track which containers have been animated
 
     _init: function () {
       // Bail early if mobile
@@ -208,7 +209,13 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
       log("🏷️ Using unique ScrollTrigger ID:", uniqueId);
 
       if ($(container).hasClass("is-animate-no-scroll")) {
-        log("🎬 Using immediate animation");
+        log("🎬 Using immediate animation for is-animate-no-scroll");
+
+        // FIX: Mark as animated after initial load is complete
+        if (!isInitialLoad) {
+          this.animatedContainers.add(container);
+        }
+
         gsap.fromTo(
           pathElement,
           { drawSVG: "0%" },
@@ -216,10 +223,19 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
             drawSVG: "100%",
             duration: 1.5,
             ease: "power2.out",
+            onComplete: () => {
+              log("✅ Immediate animation completed for container:", container);
+            },
           },
         );
       } else {
         log("🎬 Using scroll trigger animation");
+
+        // FIX: Mark as animated after initial load is complete
+        if (!isInitialLoad) {
+          this.animatedContainers.add(container);
+        }
+
         gsap.fromTo(
           pathElement,
           { drawSVG: reversePathDraw ? "100% 100%" : "0% 0%" },
@@ -240,6 +256,15 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     onCompleteEvent(container) {
       log("🎉 onCompleteEvent called");
 
+      // FIX: Only prevent duplicates after initial load is complete
+      if (!isInitialLoad && this.animatedContainers.has(container)) {
+        log(
+          "⚠️ Container already animated after initial load, skipping:",
+          container,
+        );
+        return;
+      }
+
       // Emit a custom event when the paths are ready
       const event = new CustomEvent("hencurvesPathReady", {
         detail: {
@@ -257,6 +282,9 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     // FIX: Updated destroy with targeted cleanup
     _destroy: function () {
       log("💥 _destroy called");
+
+      // FIX: Clear animated containers tracking
+      this.animatedContainers.clear();
 
       // FIX: Only kill YOUR ScrollTriggers, not all of them
       ScrollTrigger.getAll().forEach((trigger) => {
@@ -280,10 +308,25 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     },
   };
 
+  // FIX: Simplified initialization tracking
+  let hasInitialized = false;
+  let isInitialLoad = true;
+
+  // Fire an initial resize once page has fully loaded
+  window.addEventListener("load", () => {
+    log("🌐 Window load event - firing initial resize");
+    if (!hasInitialized) {
+      handleResize();
+    }
+  });
+
+  // FIX: Improved resize handler with better event distinction
   const handleResize = debounce(() => {
     log(
       "🔄 handleResize triggered (DEBOUNCED), isMobile:",
       HencurveAnchors.isMobile,
+      "isInitialLoad:",
+      isInitialLoad,
     );
     log("📱 Window size:", window.innerWidth, "x", window.innerHeight);
 
@@ -298,6 +341,8 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
           log("🔄 Reinitializing after resize...");
           HencurveAnchors._init();
           HencurveAnchors.isResizing = false;
+          hasInitialized = true;
+          isInitialLoad = false; // Mark that initial load is complete
         });
       }, 100);
     } else {
@@ -313,14 +358,18 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
     log("📱 MatchMedia: Mobile breakpoint triggered");
     HencurveAnchors.isMobile = true;
     HencurveAnchors._destroy(); // Destroy on mobile
+    hasInitialized = false; // Reset initialization state
+    isInitialLoad = true; // Reset to initial load state
   });
 
   mm.add(`(min-width: ${breakPoint + 1}px)`, () => {
     log("🖥️ MatchMedia: Desktop breakpoint triggered");
     HencurveAnchors.isMobile = false;
-    // FIX: Add timing for proper resize positioning
+    // FIX: Initialize on desktop breakpoint
     requestAnimationFrame(() => {
       HencurveAnchors._init(); // Initialize on desktop
+      hasInitialized = true;
+      // Don't reset isInitialLoad here - let the resize handler manage it
     });
   });
 
@@ -335,10 +384,4 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
   } else {
     addEventListeners();
   }
-
-  // Fire an initial resize once page has fully loaded
-  window.addEventListener("load", () => {
-    log("🌐 Window load event - firing initial resize");
-    handleResize();
-  });
 })(document, window, $);
