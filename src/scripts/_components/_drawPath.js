@@ -9,7 +9,7 @@ gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
 (function (document, window, $) {
   // Debug flag - set to true to enable console logs
-  const DEBUG = true;
+  const DEBUG = false;
 
   const log = (...args) => {
     if (DEBUG) console.log(...args);
