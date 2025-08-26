@@ -23,7 +23,7 @@ function initTeamVideos() {
         );
       };
 
-      const videoSrc = isSafari
+      const videoSrc = isSafari()
         ? `${R2_BASE_URL}/team-video/hevc/${slugPortion}.mov`
         : `${R2_BASE_URL}/team-video/webm/${slugPortion}.webm`;
       video.src = videoSrc;
