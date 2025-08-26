@@ -1,7 +1,7 @@
 // Import all CSS
-import "./styles/main.css";
+import "./styles/main.scss";
 import "./styles/components/hero-hencurve.scss";
-import "./styles/pages/home.css";
+import "./styles/pages/home.scss";
 import "./styles/pages/about.scss";
 
 // Import all JavaScript
