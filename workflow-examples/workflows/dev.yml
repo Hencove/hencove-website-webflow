@@ -3,7 +3,7 @@ name: Build and Deploy Dev Assets
 on:
   push:
     branches:
-      - dev
+      - dontuse
 
 jobs:
   build-and-deploy-dev:
