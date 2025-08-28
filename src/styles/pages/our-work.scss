@@ -1,0 +1,15 @@
+/* Our Work Page */
+#our-work-filter-list {
+  opacity: 0;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
+  visibility: hidden;
+  &.is-visible {
+    opacity: 1;
+    transition:
+      opacity 0.3s ease,
+      visibility 0s linear 0s;
+    visibility: visible;
+  }
+}
