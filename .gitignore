@@ -36,6 +36,7 @@ node_modules/
 .Trashes
 Thumbs.db
 .nova
+.zed
 .vscode/
 .idea/
 *.swp
