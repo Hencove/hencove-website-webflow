@@ -19,4 +19,4 @@ import "./scripts/about/team-videos.js";
 import "./scripts/about/team-filter.js";
 import "./scripts/our-work/category-filter.js";
 
-console.log("Webflow assets loaded");
+console.log("Webflow assets loaded with new branch code");
