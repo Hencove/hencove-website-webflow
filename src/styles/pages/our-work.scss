@@ -1,15 +1,16 @@
-/* Our Work Page */
-#our-work-filter-list {
-  opacity: 0;
-  transition:
-    opacity 0.3s ease,
-    display 0s ease 0.3s; // Delay display change until after opacity transition
-  display: none;
-  &.is-visible {
-    opacity: 1;
-    transition:
-      opacity 0.3s ease,
-      display 0s ease 0s; // Delay display change until after opacity transition
-    display: block;
-  }
-}
+// /* Our Work Page */
+// #our-work-filter-list {
+//   opacity: 0;
+//   transition:
+//     opacity 0.3s ease,
+//     visibility 0s linear 0.3s;
+//   visibility: hidden;
+// }
+
+// #our-work-filter-list.is-visible {
+//   opacity: 1;
+//   transition:
+//     opacity 0.3s ease,
+//     visibility 0s linear 0s;
+//   visibility: visible;
+// }
