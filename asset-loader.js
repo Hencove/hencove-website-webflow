@@ -27,7 +27,6 @@
 
   const env = isDev ? "dev" : "main";
 
-
   // Load assets using manifest
   loadAssetsWithManifest(env);
 

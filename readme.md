@@ -67,6 +67,7 @@ This allows the dev mode branch selector to load assets from any deployed branch
 ## Dev Mode
 
 Add `?dev` to any URL to enable development mode with:
+
 - Unminified assets
 - Branch selection dropdown (fetches branches from configured GitHub repo)
 - Real-time manifest info
@@ -75,6 +76,7 @@ Add `?dev` to any URL to enable development mode with:
 ### Branch Selection
 
 In dev mode, the system will:
+
 1. Fetch all available branches from your GitHub repository
 2. Display them in a dropdown in the dev panel
 3. Allow switching between branches (saves selection in localStorage)
