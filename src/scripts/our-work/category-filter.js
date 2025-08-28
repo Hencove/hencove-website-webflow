@@ -59,7 +59,6 @@ function _initOurWorkCategoryFilter() {
   const ourWorkFilterContainer = document.getElementById(
     "our-work-filter-list",
   );
-
   const filterTrigger = document.getElementById("our-work-category-link");
 
   // If this page doesn't include the filter UI, safely exit.
@@ -80,7 +79,7 @@ function _initOurWorkCategoryFilter() {
     if (triggerElement) {
       triggerElement.addEventListener("click", function (event) {
         event.preventDefault(); // Stop the link from navigating
-        handleTabClick(item.linkTriggerID);
+        handleTabClick(item.linkTriggerID, filterTrigger);
         ourWorkFilterContainer.classList.toggle("is-visible");
       });
     }
@@ -93,7 +92,7 @@ function _initOurWorkCategoryFilter() {
 }
 
 // Function to update the active tab and content
-function handleTabClick(clickedTriggerID) {
+function handleTabClick(clickedTriggerID, filterTrigger) {
   our_work_map.forEach((item) => {
     const triggerEl = document.getElementById(item.linkTriggerID);
     const containerEl = document.getElementById(item.containerID);
