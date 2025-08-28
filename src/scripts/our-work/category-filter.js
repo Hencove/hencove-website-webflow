@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+  console.log("Category filter script loaded");
+
   // 1. Define the map of trigger IDs to container IDs.
   const our_work_map = [
     {
@@ -63,9 +65,29 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   filterTrigger.addEventListener("click", function (event) {
+    log("Filter trigger clicked");
     event.preventDefault();
     ourWorkFilterContainer.classList.toggle("is-visible");
   });
+
+  // 2. Add click event listeners to each link trigger element.
+  our_work_map.forEach((item) => {
+    const triggerElement = document.getElementById(item.linkTriggerID);
+
+    if (triggerElement) {
+      triggerElement.addEventListener("click", function (event) {
+        event.preventDefault(); // Stop the link from navigating
+        handleTabClick(item.linkTriggerID);
+        ourWorkFilterContainer.classList.toggle("is-visible");
+      });
+    }
+  });
+
+  // 3. Set the initial state on page load (shows the first item).
+  if (our_work_map.length > 0) {
+    handleTabClick(our_work_map[0].linkTriggerID);
+  }
+
   // Function to update the active tab and content
   function handleTabClick(clickedTriggerID) {
     our_work_map.forEach((item) => {
@@ -92,23 +114,5 @@ document.addEventListener("DOMContentLoaded", function () {
         triggerEl.classList.remove("active");
       }
     });
-  }
-
-  // 2. Add click event listeners to each link trigger element.
-  our_work_map.forEach((item) => {
-    const triggerElement = document.getElementById(item.linkTriggerID);
-
-    if (triggerElement) {
-      triggerElement.addEventListener("click", function (event) {
-        event.preventDefault(); // Stop the link from navigating
-        handleTabClick(item.linkTriggerID);
-        ourWorkFilterContainer.classList.toggle("is-visible");
-      });
-    }
-  });
-
-  // 3. Set the initial state on page load (shows the first item).
-  if (our_work_map.length > 0) {
-    handleTabClick(our_work_map[0].linkTriggerID);
   }
 });
