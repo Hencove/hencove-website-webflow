@@ -14,8 +14,8 @@
   }
 
   // Configuration - Replace these with your values
-  const baseUrl = "https://YOUR-BUCKET-NAME.r2.dev"; // Replace with your R2 URL
-  const githubRepo = "YOUR-USERNAME/YOUR-REPO"; // Replace with your GitHub repo (e.g., "username/repo-name")
+  const baseUrl = "https://pub-aa058d2f7a144fc9b37b2046ac64d64a.r2.dev"; // Replace with your R2 URL
+  const githubRepo = "Hencove/hencove-website-webflow"; // Replace with your GitHub repo (e.g., "username/repo-name")
 
   // Get saved branch from localStorage or use default
   if (isDev) {
@@ -26,6 +26,7 @@
   }
 
   const env = isDev ? "dev" : "main";
+
 
   // Load assets using manifest
   loadAssetsWithManifest(env);

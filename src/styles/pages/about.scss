@@ -1,0 +1,33 @@
+// Team Filter Styles
+// Variables for team names
+$teams: "Bees", "Blobfish", "Ligers", "Echidnas";
+
+// About team filter section
+.about-team_filter-section {
+  // Filter label container - hidden by default
+  .about-team_filter-label-container {
+    display: none;
+  }
+
+  // Hide .filter-label_card_close when it is checked
+  &:has(input[value="Close"]:checked) .filter-label_card_close {
+    display: none;
+  }
+
+  // Hide .filter-label_card_close when no Team input is checked
+  &:not(:has(input[name="Team"]:checked)) .filter-label_card_close {
+    display: none;
+  }
+
+  // Show filter label container when any radio button other than "close" is checked
+  &:has(input[name="Team"]:checked:not([value="Close"])) {
+    // Show the specific team filter label container based on selected team
+    @each $team in $teams {
+      &:has(input[value="#{$team}"]:checked) {
+        .about-team_filter-label-container[hc-filter-team="#{$team}"] {
+          display: block;
+        }
+      }
+    }
+  }
+}
