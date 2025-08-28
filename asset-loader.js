@@ -1,8 +1,10 @@
-// Add this to your webflow Custom Code after replacing base url.
+// Add this to your webflow Custom Code after replacing base url and GitHub repo.
 
 (function () {
   // Fast path for production
   let manifestLastModified = null; // Store manifest last modified date
+  let availableBranches = []; // Store fetched branches
+  let currentBranch = "main"; // Default branch
 
   const devMode = localStorage.getItem("webflow-dev");
   const isDev = location.search.includes("dev") || devMode === "true";
@@ -11,21 +13,61 @@
     localStorage.setItem("webflow-dev", "true");
   }
 
-  const env = isDev ? "staging" : "prod";
+  // Configuration - Replace these with your values
   const baseUrl = "https://pub-aa058d2f7a144fc9b37b2046ac64d64a.r2.dev"; // Replace with your R2 URL
+  const githubRepo = "Hencove/hencove-website-webflow"; // Replace with your GitHub repo (e.g., "username/repo-name")
+
+  // Get saved branch from localStorage or use default
+  if (isDev) {
+    const savedBranch = localStorage.getItem("webflow-dev-branch");
+    if (savedBranch) {
+      currentBranch = savedBranch;
+    }
+  }
+
+  const env = isDev ? "dev" : "main";
+
 
   // Load assets using manifest
   loadAssetsWithManifest(env);
 
   if (isDev) {
     console.log("🔧 Development mode active");
+    fetchGitHubBranches();
     document.addEventListener("DOMContentLoaded", addDevPanel);
+  }
+
+  async function fetchGitHubBranches() {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${githubRepo}/branches`,
+      );
+
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status}`);
+      }
+
+      const branches = await response.json();
+      availableBranches = branches.map((branch) => branch.name).sort();
+
+      console.log("📋 Available branches:", availableBranches);
+
+      // Update branch selector if panel already exists
+      updateBranchSelector();
+    } catch (error) {
+      console.warn("⚠️ Could not fetch GitHub branches:", error.message);
+      availableBranches = [currentBranch]; // Fallback to current branch
+      updateBranchSelector();
+    }
   }
 
   async function loadAssetsWithManifest(environment) {
     try {
+      // Use branch in URL for dev mode, otherwise use environment
+      const urlPath = isDev ? currentBranch : environment;
+
       // Fetch manifest
-      const manifestUrl = `${baseUrl}/${environment}/manifest.json`;
+      const manifestUrl = `${baseUrl}/${urlPath}/manifest.json`;
       const response = await fetch(manifestUrl);
 
       const manifest = await response.json();
@@ -39,15 +81,16 @@
       // Load CSS files (from manifest)
       if (mainEntry.css && mainEntry.css.length > 0) {
         mainEntry.css.forEach((cssFile) => {
-          loadAsset("css", `${baseUrl}/${environment}/${cssFile}`);
+          loadAsset("css", `${baseUrl}/${urlPath}/${cssFile}`);
         });
       }
 
       // Load JS file
-      loadAsset("js", `${baseUrl}/${environment}/${mainEntry.file}`);
+      loadAsset("js", `${baseUrl}/${urlPath}/${mainEntry.file}`);
 
       if (isDev) {
         console.log("📦 Assets loaded via manifest:", {
+          branch: currentBranch,
           js: mainEntry.file,
           css: mainEntry.css,
         });
@@ -67,12 +110,10 @@
       // Fallback to fixed names
       const suffix = isDev ? "" : ".min";
       const version = isDev ? `?v=${Date.now()}` : "";
+      const urlPath = isDev ? currentBranch : environment;
 
-      loadAsset(
-        "css",
-        `${baseUrl}/${environment}/styles${suffix}.css${version}`,
-      );
-      loadAsset("js", `${baseUrl}/${environment}/bundle${suffix}.js${version}`);
+      loadAsset("css", `${baseUrl}/${urlPath}/styles${suffix}.css${version}`);
+      loadAsset("js", `${baseUrl}/${urlPath}/bundle${suffix}.js${version}`);
     }
   }
 
@@ -98,6 +139,25 @@
     }
   }
 
+  function updateBranchSelector() {
+    const branchSelect = document.getElementById("branch-select");
+    if (branchSelect && availableBranches.length > 0) {
+      // Clear existing options
+      branchSelect.innerHTML = "";
+
+      // Add branch options
+      availableBranches.forEach((branch) => {
+        const option = document.createElement("option");
+        option.value = branch;
+        option.textContent = branch;
+        option.selected = branch === currentBranch;
+        branchSelect.appendChild(option);
+      });
+
+      branchSelect.disabled = false;
+    }
+  }
+
   function getTimeAgo(date) {
     const now = new Date();
     const diffMs = now - date;
@@ -118,18 +178,45 @@
     const panel = document.createElement("div");
     panel.id = "webflow-dev-panel";
     panel.innerHTML = `
-      <div style="position:fixed;top:10px;right:10px;z-index:9999;background:#000;color:#fff;padding:8px 12px;border-radius:4px;font-size:11px;font-family:monospace;box-shadow:0 2px 10px rgba(0,0,0,0.3);">
+      <div style="position:fixed;top:10px;right:10px;z-index:9999;background:#000;color:#fff;padding:8px 12px;border-radius:4px;font-size:11px;font-family:monospace;box-shadow:0 2px 10px rgba(0,0,0,0.3);min-width:180px;">
         <div style="margin-bottom:8px;color:#0f0;">DEV MODE</div>
+        <div style="margin-bottom:8px;">
+          <label style="display:block;margin-bottom:4px;color:#ccc;font-size:10px;">Branch:</label>
+          <select id="branch-select" style="background:#333;color:#fff;border:1px solid #555;padding:2px 4px;border-radius:2px;width:100%;font-size:10px;" disabled>
+            <option>Loading branches...</option>
+          </select>
+        </div>
         <div id="manifest-info" style="margin-bottom:8px;color:#ccc;font-size:10px;">Loading manifest...</div>
-        <button id="dev-exit-btn" style="background:#333;color:#fff;border:none;padding:4px 8px;margin-right:4px;border-radius:2px;cursor:pointer;">Exit</button>
-        <button id="dev-refresh-btn" style="background:#333;color:#fff;border:none;padding:4px 8px;border-radius:2px;cursor:pointer;">Refresh</button>
+        <div style="display:flex;gap:4px;">
+          <button id="dev-exit-btn" style="background:#333;color:#fff;border:none;padding:4px 8px;border-radius:2px;cursor:pointer;flex:1;font-size:10px;">Exit</button>
+          <button id="dev-refresh-btn" style="background:#333;color:#fff;border:none;padding:4px 8px;border-radius:2px;cursor:pointer;flex:1;font-size:10px;">Refresh</button>
+        </div>
       </div>
     `;
 
     document.body.appendChild(panel);
 
-    // Update manifest info if already loaded
+    // Update branch selector and manifest info if already loaded
+    updateBranchSelector();
     updateDevPanelManifestInfo();
+
+    // Branch selector change handler
+    document
+      .getElementById("branch-select")
+      .addEventListener("change", function (e) {
+        const selectedBranch = e.target.value;
+        if (selectedBranch !== currentBranch) {
+          currentBranch = selectedBranch;
+          localStorage.setItem("webflow-dev-branch", selectedBranch);
+          console.log(`🌿 Switching to branch: ${selectedBranch}`);
+
+          // Reload page to load assets from new branch
+          const currentUrl = new URL(window.location);
+          currentUrl.searchParams.set("dev", "");
+          currentUrl.searchParams.set("t", Date.now());
+          window.location.href = currentUrl.toString();
+        }
+      });
 
     // Fixed exit button - removes ?dev from URL
     document
@@ -140,6 +227,7 @@
 
         try {
           localStorage.removeItem("webflow-dev");
+          localStorage.removeItem("webflow-dev-branch");
           console.log("localStorage cleared");
 
           // Remove ?dev from URL and reload
