@@ -3,6 +3,7 @@ import "./styles/main.scss";
 import "./styles/components/hero-hencurve.scss";
 import "./styles/pages/home.scss";
 import "./styles/pages/about.scss";
+import "./styles/pages/our-work.scss";
 
 // Import all JavaScript
 import "./scripts/main.js";
@@ -16,5 +17,6 @@ import "./scripts/_components/_pinwheel.js";
 import "./scripts/about/card-size.js";
 import "./scripts/about/team-videos.js";
 import "./scripts/about/team-filter.js";
+import "./scripts/our-work/category-filter.js";
 
 console.log("Webflow assets loaded");
