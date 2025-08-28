@@ -57,6 +57,11 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   const filterTrigger = document.getElementById("our-work-category-link");
 
+  // If this page doesn't include the filter UI, safely exit.
+  if (!ourWorkFilterContainer || !filterTrigger) {
+    return;
+  }
+
   filterTrigger.addEventListener("click", function (event) {
     event.preventDefault();
     ourWorkFilterContainer.classList.toggle("is-visible");
