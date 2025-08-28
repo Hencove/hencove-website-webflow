@@ -66,7 +66,7 @@ function _initOurWorkCategoryFilter() {
   }
 
   filterTrigger.addEventListener("click", function (event) {
-    log("Filter trigger clicked");
+    console.log("Filter trigger clicked");
     event.preventDefault();
     ourWorkFilterContainer.classList.toggle("is-visible");
   });
