@@ -87,7 +87,7 @@ function _initOurWorkCategoryFilter() {
 
   // 3. Set the initial state on page load (shows the first item).
   if (our_work_map.length > 0) {
-    handleTabClick(our_work_map[0].linkTriggerID);
+    handleTabClick(our_work_map[0].linkTriggerID, filterTrigger);
   }
 }
 
