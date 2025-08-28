@@ -37,5 +37,5 @@ jobs:
 
         run: |
           # Deploy production assets (with --remote flag)
-          wrangler r2 object put $R2_BUCKET_NAME/prod/manifest.json --file=dist/prod/manifest.json --remote
+          wrangler r2 object put $R2_BUCKET_NAME/main/manifest.json --file=dist/main/manifest.json --remote
           find dist/prod/assets -type f -exec sh -c 'wrangler r2 object put $R2_BUCKET_NAME/prod/assets/$(basename "$1") --file="$1" --remote' _ {} \;
